@@ -1,0 +1,36 @@
+{
+	"title": "query with EMPTY NESTED NOT",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"NOT": [
+						{
+							"GT": {}
+						},
+						{
+							"IS": {
+								"sections_dept": "adhe"
+							}
+						}
+					]
+				},
+				{
+					"EQ": {
+						"sections_avg": 95
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_id",
+				"sections_avg"
+			],
+			"ORDER": "sections_year"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
