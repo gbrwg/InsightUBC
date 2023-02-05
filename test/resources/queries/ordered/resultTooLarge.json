@@ -1,0 +1,32 @@
+{
+	"title": "result too large",
+	"input": {
+		"WHERE": {
+			"OR": [
+				{
+					"IS": {
+						"sections_dept": "cpsc"
+					}
+				},
+				{
+					"IS": {
+						"sections_dept": "a*"
+					}
+				},
+				{
+					"IS": {
+						"sections_dept": "*b"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept"
+			],
+			"ORDER": "sections_dept"
+		}
+	},
+	"errorExpected": true,
+	"expected": "ResultTooLargeError"
+}
