@@ -2,8 +2,8 @@ import {
 	IInsightFacade,
 	InsightDatasetKind,
 	InsightError,
-	InsightResult,
-	ResultTooLargeError,
+	InsightResult, NotFoundError,
+	ResultTooLargeError
 } from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 
@@ -52,9 +52,126 @@ describe("InsightFacade", function () {
 		});
 
 		// This is a unit test. You should create more like this!
-		it("should reject with  an empty dataset id", function () {
+		it ("should reject with  an empty dataset id", function() {
 			const result = facade.addDataset("", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject ids containing underscore", function() {
+			const result = facade.addDataset("data_set", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject ids only containing whitespace", function() {
+			const result = facade.addDataset("  ", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject duplicate ids", function() {
+			const result = facade.addDataset("dataset", sections, InsightDatasetKind.Sections)
+				.then(() => facade.addDataset("dataset", sections, InsightDatasetKind.Sections));
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject invalid dataset kind", function() {
+			const result = facade.addDataset("dataset", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject invalid dataset", function() {
+			const result = facade.addDataset("dataset", "dataset", InsightDatasetKind.Sections);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		// remove dataset tests
+		it("should reject removing nonexistent id", function() {
+			const result = facade.removeDataset("badid");
+			return expect(result).to.eventually.be.rejectedWith(NotFoundError);
+		});
+
+		it("should reject removing empty id", function() {
+			const result = facade.removeDataset("");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject removing whitespace id", function() {
+			const result = facade.removeDataset("  ");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject removing ids with underscore", function() {
+			const result = facade.removeDataset("cpsc_310");
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should reject removing twice", async function() {
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			await facade.removeDataset("sections");
+			const result = await facade.removeDataset("sections");
+
+			expect(result).to.be.rejectedWith(InsightError);
+
+		});
+
+		it("should delete existing dataset", async function() { //
+			await facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections);
+			await facade.removeDataset("cpsc310");
+
+			const result = await facade.listDatasets();
+
+			expect(result).to.have.lengthOf(0);
+		});
+
+		it("should remove correct dataset", async function() {
+			await facade.addDataset("data", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("data2", sections, InsightDatasetKind.Sections);
+			const result1 = await facade.removeDataset("data2");
+
+			const result = await facade.listDatasets();
+
+			expect(result).to.have.lengthOf(1);
+			expect(result1).to.equal("data2");
+
+		});
+
+		it("should return correct existing dataset", function() {
+			const result = facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections)
+				.then(() => facade.listDatasets());
+
+			return expect(result).eventually.to.have.lengthOf(1);
+		});
+
+		it("should return no datasets", function() {
+			const result = facade.listDatasets();
+			return expect(result).eventually.to.have.lengthOf(0);
+		});
+
+
+		it("should return multiple datasets", async function() {
+			await facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("cpsc313", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("cpsc320", sections, InsightDatasetKind.Sections);
+
+			const result = await facade.listDatasets();
+
+			expect(result).to.have.lengthOf(3);
+			expect(result).to.deep.equal([
+				{
+					id: "cpsc310",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				},
+				{
+					id: "cpsc313",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				},
+				{
+					id: "cpsc320",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				}
+			]);
 		});
 	});
 
@@ -71,7 +188,9 @@ describe("InsightFacade", function () {
 
 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [facade.addDataset("sections", sections, InsightDatasetKind.Sections)];
+			const loadDatasetPromises = [
+				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			];
 
 			return Promise.all(loadDatasetPromises);
 		});

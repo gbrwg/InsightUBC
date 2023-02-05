@@ -1,0 +1,14 @@
+{
+	"title": "invalid key in query throws InsightError",
+	"input": {
+		"WHERE": {},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sectionsavg"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
