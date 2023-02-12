@@ -1,0 +1,23 @@
+{
+	"title": "Invalid key sections_abc",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"OR": [
+					{
+						"GT": {
+							"sections_abc": 2
+						}
+					}
+				]
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

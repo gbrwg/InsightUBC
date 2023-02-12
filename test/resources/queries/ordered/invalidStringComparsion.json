@@ -1,0 +1,22 @@
+{
+  "title": "invalid string comparator",
+  "input": {
+    "WHERE": {
+      "OR": [
+        {
+          "IS": {
+            "sections_dept": 95
+          }
+        }
+      ]
+    },
+    "OPTIONS": {
+      "COLUMNS": [
+        "sections_dept"
+      ],
+      "ORDER": "sections_dept"
+    }
+  },
+  "errorExpected": true,
+  "expected": "InsightError"
+}

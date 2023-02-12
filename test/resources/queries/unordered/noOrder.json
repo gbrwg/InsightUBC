@@ -1,0 +1,36 @@
+{
+	"title": "No Order",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"OR": [
+					{
+						"GT": {
+							"sections_avg": 2
+						}
+					}
+				]
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_avg"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_avg": 0
+		},
+		{
+			"sections_avg": 0
+		},
+		{
+			"sections_avg": 0
+		},
+		{
+			"sections_avg": 1
+		}
+	]
+}

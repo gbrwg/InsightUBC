@@ -1,0 +1,21 @@
+{
+	"title": "OPTIONS missing COLUMNS",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"OR": [
+					{
+						"GT": {
+							"sections_avg": 2
+						}
+					}
+				]
+			}
+		},
+		"OPTIONS": {
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
