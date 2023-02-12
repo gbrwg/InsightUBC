@@ -7,8 +7,7 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 
-import JSZip from "jszip";
-import fs, {readFileSync} from "fs";
+import fs from "fs-extra";
 import Helper from "./Helper";
 
 /**
@@ -26,6 +25,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+
 		return new Promise<string[]>((resolve, reject) => {
 			// !id.trim() from https://stackoverflow.com/questions/10261986/how-to-detect-string-which-contains-only-spaces
 			if (kind !== "sections" || id === "" || id.includes("_") || !id.trim()) {
@@ -37,8 +37,9 @@ export default class InsightFacade implements IInsightFacade {
 			}
 			// parse file
 
-			this.helper.processData(id, content, kind)
+			this.helper.processData(content)
 				.then((result) => {
+					// this.writeToDisk(id, result);
 					this.datasets.set(id, result);
 					resolve(this.datasets.get(id));
 				})
@@ -46,6 +47,16 @@ export default class InsightFacade implements IInsightFacade {
 					reject(new InsightError());
 				});
 		});
+	}
+
+	private writeToDisk(id: string, result: string[]) {
+		fs.ensureDir("./data.json")
+			.then(() => {
+				return fs.writeJson("./data.json", result);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
 	}
 
 	public removeDataset(id: string): Promise<string> {
