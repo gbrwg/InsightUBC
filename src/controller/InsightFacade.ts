@@ -41,7 +41,8 @@ export default class InsightFacade implements IInsightFacade {
 				.then((result) => {
 					// this.writeToDisk(id, result);
 					this.datasets.set(id, result);
-					resolve(this.datasets.get(id));
+					let keys = Array.from(this.datasets.keys());
+					resolve(keys);
 				})
 				.catch(() => {
 					reject(new InsightError());
