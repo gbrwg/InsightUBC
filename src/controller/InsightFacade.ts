@@ -9,6 +9,8 @@ import {
 
 import fs from "fs-extra";
 import Helper from "./Helper";
+import {Query} from "./Query";
+
 
 /**
  * This is the main programmatic entry point for the project.
@@ -41,8 +43,7 @@ export default class InsightFacade implements IInsightFacade {
 				.then((result) => {
 					// this.writeToDisk(id, result);
 					this.datasets.set(id, result);
-					let keys = Array.from(this.datasets.keys());
-					resolve(keys);
+					resolve(Array.from(this.datasets.keys()));
 				})
 				.catch(() => {
 					reject(new InsightError());
@@ -75,7 +76,21 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
-		return Promise.reject("Not implemented.");
+		// Need dataset
+
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const data = require("../controller/courses.json");
+
+		return new Promise((resolve, reject) => {
+			try {
+				Query.validate(query);
+				const result = Query.perform(query, data["data"]);
+				resolve(result);
+			} catch (error) {
+				reject(error);
+			}
+		});
+		// return Promise.reject("Not implemented.");
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
