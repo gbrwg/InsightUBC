@@ -23,6 +23,7 @@ export default class InsightFacade implements IInsightFacade {
 	constructor() {
 		this.helper = new Helper();
 		this.datasets = new Map<string, any[]>();
+		this.readFromDisk();
 		console.log("InsightFacadeImpl::init()");
 	}
 
@@ -55,22 +56,28 @@ export default class InsightFacade implements IInsightFacade {
 		let path = "./data";
 		fs.ensureDir(path)
 			.then(() => {
-				return fs.writeJsonSync("./data/" + id + ".json", result);
+				return fs.writeJsonSync("./data " + id + ".json", result);
 			})
 			.catch((err) => {
 				console.error(err);
 			});
 	}
 
-	private readFromDisk() {
+	private readFromDisk(){
 		let path = "./data";
-		fs.ensureDir(path)
-			.then(() => {
-				return fs.readJSONSync(path);
-			})
-			.catch((err) => {
+		fs.readdir(path, (err, files) => {
+			if (err) {
 				console.error(err);
-			});
+			} else {
+				files.forEach((file) => {
+					const id = file.split(".")[0];
+					const data = fs.readJSONSync(path + "/" + file);
+					this.datasets.set(id, data);
+				});
+			}
+		});
+
+
 	}
 
 	public removeDataset(id: string): Promise<string> {
@@ -82,6 +89,7 @@ export default class InsightFacade implements IInsightFacade {
 				reject(new NotFoundError("Cannot delete non-existent ID"));
 			} else {
 				this.datasets.delete(id);
+				fs.removeSync("./data " + id + ".json");
 				resolve(id);
 			}
 		});
