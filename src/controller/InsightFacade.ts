@@ -7,7 +7,7 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 
-import fs from "fs-extra";
+import fs, {readJSONSync} from "fs-extra";
 import Helper from "./Helper";
 import {Query} from "./Query";
 
@@ -41,7 +41,7 @@ export default class InsightFacade implements IInsightFacade {
 
 			this.helper.processData(content)
 				.then((result) => {
-					// this.writeToDisk(id, result);
+					this.writeToDisk(id, result);
 					this.datasets.set(id, result);
 					resolve(Array.from(this.datasets.keys()));
 				})
@@ -52,9 +52,21 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	private writeToDisk(id: string, result: string[]) {
-		fs.ensureDir("./data.json")
+		let path = "./data";
+		fs.ensureDir(path)
 			.then(() => {
-				return fs.writeJson("./data.json", result);
+				return fs.writeJsonSync("./data/" + id + ".json", result);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	}
+
+	private readFromDisk() {
+		let path = "./data";
+		fs.ensureDir(path)
+			.then(() => {
+				return fs.readJSONSync(path);
 			})
 			.catch((err) => {
 				console.error(err);
