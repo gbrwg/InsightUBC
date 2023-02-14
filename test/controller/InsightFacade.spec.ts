@@ -83,6 +83,11 @@ describe("InsightFacade", function () {
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
+		it("should successfully add one dataset", function() {
+			const result = facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			return expect(result).to.eventually.deep.equal(["sections"]);
+		});
+
 		// remove dataset tests
 		it("should reject removing nonexistent id", function() {
 			const result = facade.removeDataset("badid");
@@ -109,7 +114,7 @@ describe("InsightFacade", function () {
 			await facade.removeDataset("sections");
 			const result = await facade.removeDataset("sections");
 
-			expect(result).to.be.rejectedWith(InsightError);
+			expect(result).to.be.rejectedWith(NotFoundError);
 
 		});
 
