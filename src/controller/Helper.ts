@@ -22,8 +22,10 @@ export default class Helper {
 		}
 
 		let json = await this.getJSON(data);
+		// https://stackoverflow.com/questions/43118692/typescript-filter-out-nulls-from-an-array
+		const filteredArray: any[] = json.filter((s): s is string => Boolean(s));
 
-		return Promise.resolve(json);
+		return Promise.resolve(filteredArray);
 
 	}
 
@@ -40,26 +42,27 @@ export default class Helper {
 		let sections: any[] = [];
 		return Promise.all(
 			data.map((file, index) => {
-				if (index === 0) {
+				if (index === 0 || file === "") {
 					return;
+				} else {
+					const res = JSON.parse(file).result;
+					const fileSections = [];
+					for (const r of res) {
+						fileSections.push({
+							uuid: String(r.id),
+							id: r.course,
+							title: r.Title,
+							instructor: r.Professor,
+							dept: r.Subject,
+							avg: r.Avg,
+							pass: r.Pass,
+							fail: r.Fail,
+							audit: r.Audit,
+							year: r.Section === "overall" ? 1900 : Number(r.year),
+						});
+					}
+					return fileSections;
 				}
-				const res = JSON.parse(file).result;
-				const fileSections = [];
-				for (const r of res) {
-					fileSections.push({
-						uuid: String(r.id),
-						id: r.course,
-						title: r.Title,
-						instructor: r.Professor,
-						dept: r.Subject,
-						avg: r.Avg,
-						pass: r.Pass,
-						fail: r.Fail,
-						audit: r.Audit,
-						year: r.Section === "overall" ? 1900 : Number(r.year),
-					});
-				}
-				return fileSections;
 			})
 		).then((results) => {
 			for (const result of results) {
