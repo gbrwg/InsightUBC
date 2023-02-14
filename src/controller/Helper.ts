@@ -6,19 +6,10 @@ import {
 	InsightResult,
 	NotFoundError,
 } from "./IInsightFacade";
-import JSZip, {JSZipObject} from "jszip";
-import Section from "./Section";
-
-interface Dataset{
-	id: string;
-	data: Section[];
-	kind: InsightDatasetKind;
-	numRows: number;
-}
+import JSZip from "jszip";
 
 export default class Helper {
-	private datasets: any;
-	public async processData(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+	public async processData(content: string): Promise<string[]> {
 		let zip: JSZip = await JSZip.loadAsync(content, {base64: true});
 		let data: any[] = [];
 		// https://stackoverflow.com/questions/39939644/jszip-checking-if-a-zip-folder-contains-a-specific-file
@@ -29,41 +20,47 @@ export default class Helper {
 		}
 
 		let json = await this.getJSON(data);
+		// https://stackoverflow.com/questions/43118692/typescript-filter-out-nulls-from-an-array
+		const filteredArray: any[] = json.filter((s): s is string => Boolean(s));
 
-		return Promise.resolve(json);
+		return Promise.resolve(filteredArray);
 
 	}
 
 	private getZipFilesContent(zip: JSZip): Promise<string[]>{
-		let files: any[] = [];
+		let files: Array<Promise<string>> = [];
 		zip.forEach((relativePath, file) => {
 			files.push(file.async("text"));
 		});
 
-		return Promise.resolve(files);
+		return Promise.all(files);
 	}
 
 	private getJSON(data: string[]): Promise<any[]> {
 		let sections: any[] = [];
 		return Promise.all(
-			data.map((file) => {
-				const res = JSON.parse(file).result;
-				const fileSections = [];
-				for (const r of res) {
-					fileSections.push({
-						uuid: String(r.id),
-						id: r.course,
-						title: r.Title,
-						instructor: r.Professor,
-						dept: r.Subject,
-						avg: r.Avg,
-						pass: r.Pass,
-						fail: r.Fail,
-						audi: r.Audit,
-						year: r.Section === "overall" ? 1900 : Number(r.year),
-					});
+			data.map((file, index) => {
+				if (index === 0 || file === "") {
+					return;
+				} else {
+					const res = JSON.parse(file).result;
+					const fileSections = [];
+					for (const r of res) {
+						fileSections.push({
+							uuid: String(r.id),
+							id: r.course,
+							title: r.Title,
+							instructor: r.Professor,
+							dept: r.Subject,
+							avg: r.Avg,
+							pass: r.Pass,
+							fail: r.Fail,
+							audit: r.Audit,
+							year: r.Section === "overall" ? 1900 : Number(r.year),
+						});
+					}
+					return fileSections;
 				}
-				return fileSections;
 			})
 		).then((results) => {
 			for (const result of results) {
