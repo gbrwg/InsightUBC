@@ -7,8 +7,8 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 
-import JSZip from "jszip";
-import fs, {readFileSync} from "fs";
+
+import fs from "fs-extra";
 import Helper from "./Helper";
 
 /**
@@ -22,6 +22,7 @@ export default class InsightFacade implements IInsightFacade {
 	constructor() {
 		this.helper = new Helper();
 		this.datasets = new Map<string, any[]>();
+		this.readFromDisk();
 		console.log("InsightFacadeImpl::init()");
 	}
 
@@ -37,26 +38,55 @@ export default class InsightFacade implements IInsightFacade {
 			}
 			// parse file
 
-			this.helper.processData(id, content, kind)
+			this.helper.processData(content)
 				.then((result) => {
+					if (result.length === 0) {
+						reject(new InsightError("invalid dataset"));
+					}
+					this.writeToDisk(id, result);
 					this.datasets.set(id, result);
-					resolve(this.datasets.get(id));
+					resolve(Array.from(this.datasets.keys()));
 				})
 				.catch(() => {
 					reject(new InsightError());
 				});
 		});
 	}
+	private writeToDisk(id: string, result: string[]) {
+		let path = "./data";
+		fs.ensureDir(path)
+			.then(() => {
+				return fs.writeJsonSync("./data " + id + ".json", result);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	}
 
+	private readFromDisk() {
+		let path = "./data";
+		fs.readdir(path, (err, files) => {
+			if (err) {
+				return;
+			} else {
+				files.forEach((file) => {
+					const id = file.split(".")[0];
+					const data = fs.readJsonSync(path + "/" + file);
+					this.datasets.set(id, data);
+				});
+			}
+		});
+	}
 	public removeDataset(id: string): Promise<string> {
 
 		return new Promise<string>((resolve, reject) => {
 			if (id === "" || id.includes("_") || !id.trim()) {
 				reject(new InsightError("invalid ID"));
 			} else if (!this.datasets.has(id)) {
-				reject(new NotFoundError("Cannot delete non-existent ID"));
+				reject(new NotFoundError());
 			} else {
 				this.datasets.delete(id);
+				fs.removeSync("./data " + id + ".json");
 				resolve(id);
 			}
 		});
@@ -67,6 +97,12 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
-		return Promise.reject("Not implemented.");
+		return new Promise((resolve) => {
+			const InsightDatasets: InsightDataset[] = [];
+			this.datasets.forEach((value: any[], key: string) => {
+				InsightDatasets.push({id: key, kind: InsightDatasetKind.Sections, numRows: value.length});
+			});
+			resolve(InsightDatasets);
+		});
 	}
 }
