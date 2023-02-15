@@ -6,9 +6,11 @@ import {
 	InsightResult,
 	NotFoundError,
 } from "./IInsightFacade";
+
 import JSZip from "jszip";
 
 export default class Helper {
+
 	public async processData(content: string): Promise<string[]> {
 		let zip: JSZip = await JSZip.loadAsync(content, {base64: true});
 		let data: any[] = [];

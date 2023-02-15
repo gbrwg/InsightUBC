@@ -7,9 +7,10 @@ import {
 	NotFoundError,
 } from "./IInsightFacade";
 
-
 import fs from "fs-extra";
 import Helper from "./Helper";
+import {Query} from "./Query";
+
 
 /**
  * This is the main programmatic entry point for the project.
@@ -27,6 +28,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+
 		return new Promise<string[]>((resolve, reject) => {
 			// !id.trim() from https://stackoverflow.com/questions/10261986/how-to-detect-string-which-contains-only-spaces
 			if (kind !== "sections" || id === "" || id.includes("_") || !id.trim()) {
@@ -63,7 +65,10 @@ export default class InsightFacade implements IInsightFacade {
 			});
 	}
 
+
+
 	private readFromDisk() {
+
 		let path = "./data";
 		fs.readdir(path, (err, files) => {
 			if (err) {
@@ -76,7 +81,10 @@ export default class InsightFacade implements IInsightFacade {
 				});
 			}
 		});
+
 	}
+	
+	
 	public removeDataset(id: string): Promise<string> {
 
 		return new Promise<string>((resolve, reject) => {
@@ -93,7 +101,16 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
-		return Promise.reject("Not implemented.");
+		return new Promise((resolve, reject) => {
+			try {
+				const id: string = Query.validate(query);
+				const data = this.datasets.get(id);
+				const result = Query.perform(query, data);
+				resolve(result);
+			} catch (error) {
+				reject(error);
+			}
+		});
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {
