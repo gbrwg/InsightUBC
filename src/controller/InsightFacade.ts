@@ -65,8 +65,6 @@ export default class InsightFacade implements IInsightFacade {
 			});
 	}
 
-
-
 	private readFromDisk() {
 
 		let path = "./data";
@@ -83,8 +81,6 @@ export default class InsightFacade implements IInsightFacade {
 		});
 
 	}
-	
-	
 	public removeDataset(id: string): Promise<string> {
 
 		return new Promise<string>((resolve, reject) => {
