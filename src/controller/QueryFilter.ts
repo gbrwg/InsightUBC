@@ -6,6 +6,7 @@ import {
 	InsightResult,
 	NotFoundError,
 } from "./IInsightFacade";
+import {Key} from "./Query";
 
 export function getKey(query: any): string {
 	const keys = Object.keys(query);
@@ -40,23 +41,23 @@ export class QueryFilter {
 		throw new InsightError("Filter error: " + JSON.stringify(query));
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const key = getKey(query);
 
 		if (!(["AND", "OR", "LT", "GT", "EQ", "IS", "NOT"].includes(key))) {
 			throw new InsightError("Body error: " + JSON.stringify(query));
 		}
 		if (["AND", "OR"].includes(key)) {
-			LogicComparison.validate(query);
+			LogicComparison.validate(query, ids);
 		}
 		if (["LT", "GT", "EQ"].includes(key)) {
-			MComparison.validate(query);
+			MComparison.validate(query, ids);
 		}
 		if (["IS"].includes(key)) {
-			SComparison.validate(query);
+			SComparison.validate(query, ids);
 		}
 		if (["NOT"].includes(key)) {
-			Negation.validate(query);
+			Negation.validate(query, ids);
 		}
 	}
 }
@@ -83,7 +84,7 @@ class LogicComparison {
 		}
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const key = getKey(query);
 		const val = getValue(query);
 
@@ -96,6 +97,10 @@ class LogicComparison {
 		if (!(val instanceof Array)) {
 			throw new InsightError("LogicComparison error: " + JSON.stringify(query));
 		}
+
+		val.forEach((v) => {
+			QueryFilter.validate(v, ids);
+		});
 	}
 }
 
@@ -121,33 +126,38 @@ class MComparison {
 		throw new InsightError("MComparison error: " + JSON.stringify(query));
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const val = getValue(query);
 
 		if (typeof getValue(val) !== "number") {
 			throw new InsightError("MComparison error: " + JSON.stringify(query));
 		}
+		if (!Key.isKey(getValue(val), ids)) {
+			throw new InsightError("Key error: " + getKey(query));
+		}
+
+		const key = getKey(val);
+		ids.add(key.split("_")[0]);
 	}
 }
 
 class SComparison {
 	public static perform(query: any, data: any[]): any[] {
-		const key = getKey(query);
 		const val = getValue(query);
 		const field = getKey(val).split("_")[1];
 		const pattern = getValue(val);
 
-		if (key.startsWith("*") && key.endsWith("*")) {
+		if (pattern.startsWith("*") && pattern.endsWith("*")) {
 			return data.filter((d) => {
 				const s: string = d[field];
 				return s.includes(pattern.replace("*", ""));
 			});
-		} else if (key.startsWith("*")) {
+		} else if (pattern.startsWith("*")) {
 			return data.filter((d) => {
 				const s: string = d[field];
 				return s.endsWith(pattern.replace("*", ""));
 			});
-		} else if (key.endsWith("*")) {
+		} else if (pattern.endsWith("*")) {
 			return data.filter((d) => {
 				const s: string = d[field];
 				return s.startsWith(pattern.replace("*", ""));
@@ -160,12 +170,22 @@ class SComparison {
 		}
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const val = getValue(query);
+		const s = getValue(val);
 
-		if (typeof getValue(val) !== "string") {
+		if (typeof s !== "string") {
 			throw new InsightError("SComparison error: " + JSON.stringify(query));
 		}
+		if (s.includes("*") && (s.indexOf("*") > 0 && s.indexOf("*") < s.length - 1)) {
+			throw new InsightError("Asterisks position error");
+		}
+		if (!Key.isKey(getKey(val), ids)) {
+			throw new InsightError("Key error: " + getKey(query));
+		}
+
+		const key = getKey(val);
+		ids.add(key.split("_")[0]);
 	}
 }
 
@@ -178,11 +198,12 @@ class Negation {
 		});
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const val = getValue(query);
 
 		if (!(val instanceof Object)) {
 			throw new InsightError("Negation error: " + JSON.stringify(query));
 		}
+		QueryFilter.validate(val, ids);
 	}
 }

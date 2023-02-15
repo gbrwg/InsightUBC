@@ -99,21 +99,16 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public performQuery(query: unknown): Promise<InsightResult[]> {
-		// Need dataset
-
-		// eslint-disable-next-line @typescript-eslint/no-require-imports
-		const data = require("../controller/courses.json");
-
 		return new Promise((resolve, reject) => {
 			try {
-				Query.validate(query);
-				const result = Query.perform(query, data["data"]);
+				const id: string = Query.validate(query);
+				const data = this.datasets.get(id);
+				const result = Query.perform(query, data);
 				resolve(result);
 			} catch (error) {
 				reject(error);
 			}
 		});
-		// return Promise.reject("Not implemented.");
 	}
 
 	public listDatasets(): Promise<InsightDataset[]> {

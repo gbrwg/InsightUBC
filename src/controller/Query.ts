@@ -21,17 +21,22 @@ export class Query {
 			throw new ResultTooLargeError("Result length is larger than 5000, " +
 				"the length is " + qData.length.toString());
 		}
-
-		const result = Options.perform(query, qData);
-		return result;
+		return Options.perform(query, qData);
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any): string {
 		if (!(Object.keys(query).length === 2 && "WHERE" in query && "OPTIONS" in query)) {
 			throw new InsightError("Something wrong with WHERE and OPTIONS");
 		}
-		Body.validate( {WHERE: query["WHERE"]} );
-		Options.validate(query["OPTIONS"]);
+
+		const ids = new Set<string>();
+		Body.validate( {WHERE: query["WHERE"]}, ids );
+		Options.validate(query["OPTIONS"], ids);
+
+		if (ids.size === 1) {
+			return Array.from(ids.values())[0];
+		}
+		throw new InsightError("Too many dataset ids");
 	}
 }
 
@@ -40,13 +45,13 @@ class Body {
 		return QueryFilter.perform(query["WHERE"], data);
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const key = getKey(query);
 
 		if (key !== "WHERE") {
 			throw new InsightError("Body error: " + JSON.stringify(query));
 		}
-		QueryFilter.validate(getValue(query));
+		QueryFilter.validate(getValue(query), ids);
 	}
 }
 
@@ -62,14 +67,14 @@ class Options {
 		}
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<any>): void {
 		const keys: string[] = Object.keys(query);
 
 		if (keys.length === 2 && keys.includes("COLUMNS") && keys.includes("ORDER")) {
-			Columns.validate( {COLUMNS: query["COLUMNS"]} );
-			Order.validate( {ORDER: query["ORDER"]}, query["COLUMNS"] );
+			Columns.validate( {COLUMNS: query["COLUMNS"]}, ids );
+			Order.validate( {ORDER: query["ORDER"]}, query["COLUMNS"], ids );
 		} else if (keys.length === 1 && keys.includes("COLUMNS")) {
-			Columns.validate( {COLUMNS: query["COLUMNS"]} );
+			Columns.validate( {COLUMNS: query["COLUMNS"]}, ids );
 		} else {
 			throw new InsightError("Options error: " + JSON.stringify(query));
 		}
@@ -82,7 +87,7 @@ class Columns {
 		return data.map((x: any) => {
 			const result: any = {};
 			val.forEach((key) => {
-				Key.isKey(key);
+				Key.isKey(key, new Set());		// Dummy placeholder
 				const field = key.split("_")[1];
 				result[key] = x[field];
 			});
@@ -90,10 +95,10 @@ class Columns {
 		});
 	}
 
-	public static validate(query: any): void {
+	public static validate(query: any, ids: Set<string>): void {
 		const val: string[] = getValue(query);
 		const x = val.map((key) => {
-			return Key.isKey(key);
+			return Key.isKey(key, ids);
 		}).every((v) => {
 			return v;
 		});
@@ -118,8 +123,9 @@ class Order {
 		});
 	}
 
-	public static validate(query: any, columnKeys: string[]): void {
+	public static validate(query: any, columnKeys: string[], ids: Set<string>): void {
 		const key = getValue(query);
+		ids.add((key.split("_")[0]));
 
 		if (!(columnKeys.includes(key))) {
 			throw new InsightError("Order error: " + JSON.stringify(query));
@@ -127,32 +133,40 @@ class Order {
 	}
 }
 
-class Key {
-	public static isKey(key: string): boolean {
-		return this.isMKey(key) || this.isSKey(key);
+export class Key {
+	public static isKey(key: string, ids: Set<string>): boolean {
+		return this.isMKey(key, ids) || this.isSKey(key, ids);
 	}
 
-	private static isMKey(key: string): boolean {
+	private static isMKey(key: string, ids: Set<string>): boolean {
 		const parts = key.split("_");
+
 		if (parts.length !== 2) {
 			throw new InsightError("Key error");
 		}
 
-		const idStr = parts[0];
 		const sField = parts[1];
 
-		return ["avg", "pass", "fail", "audit", "year"].includes(sField);
+		if (!(["avg", "pass", "fail", "audit", "year"].includes(sField))) {
+			return false;
+		}
+		ids.add(parts[0]);
+		return true;
 	}
 
-	private static isSKey(key: string): boolean {
+	private static isSKey(key: string, ids: Set<string>): boolean {
 		const parts = key.split("_");
+
 		if (parts.length !== 2) {
 			throw new InsightError("Key error");
 		}
 
-		const idStr = parts[0];
 		const sField = parts[1];
 
-		return ["dept", "id", "instructor", "title", "uuid"].includes(sField);
+		if (!(["dept", "id", "instructor", "title", "uuid"].includes(sField))) {
+			return false;
+		}
+		ids.add(parts[0]);
+		return true;
 	}
 }
