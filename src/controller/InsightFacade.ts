@@ -54,7 +54,6 @@ export default class InsightFacade implements IInsightFacade {
 				});
 		});
 	}
-
 	private writeToDisk(id: string, result: string[]) {
 		let path = "./data";
 		fs.ensureDir(path)
@@ -66,7 +65,8 @@ export default class InsightFacade implements IInsightFacade {
 			});
 	}
 
-	private readFromDisk(){
+	private readFromDisk() {
+
 		let path = "./data";
 		fs.readdir(path, (err, files) => {
 			if (err) {
@@ -80,9 +80,7 @@ export default class InsightFacade implements IInsightFacade {
 			}
 		});
 
-
 	}
-
 	public removeDataset(id: string): Promise<string> {
 
 		return new Promise<string>((resolve, reject) => {
