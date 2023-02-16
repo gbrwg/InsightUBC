@@ -101,6 +101,9 @@ export default class InsightFacade implements IInsightFacade {
 			try {
 				const id: string = Query.validate(query);
 				const data = this.datasets.get(id);
+				if (!data) {
+					throw new InsightError("No such dataset");
+				}
 				const result = Query.perform(query, data);
 				resolve(result);
 			} catch (error) {

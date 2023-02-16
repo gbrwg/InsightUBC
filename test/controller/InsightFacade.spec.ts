@@ -186,18 +186,30 @@ describe("InsightFacade", function () {
 	 * You can still make tests the normal way, this is just a convenient tool for a majority of queries.
 	 */
 	describe("PerformQuery", () => {
+		type Input = any;
+		type Output = any;
+		type Error = "InsightError" | "ResultTooLargeError";
+
 		before(function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
+			clearDisk();
 
 			facade = new InsightFacade();
+			const content = getContentFromArchives("pair.zip");
+			return facade.addDataset("sections", content, InsightDatasetKind.Sections)
+				.then((res) => {
+					return facade.addDataset("courses", content, InsightDatasetKind.Sections);
+				}).catch((err)=>{
+					console.log("Can not add courses and/or sections for perform query test");
+				});
 
 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 			// Will *fail* if there is a problem reading ANY dataset.
-			const loadDatasetPromises = [
-				facade.addDataset("sections", sections, InsightDatasetKind.Sections),
-			];
+			// const loadDatasetPromises = [
+				// facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			// ];
 
-			return Promise.all(loadDatasetPromises);
+			// return Promise.all(loadDatasetPromises);
 		});
 
 		after(function () {
@@ -205,20 +217,33 @@ describe("InsightFacade", function () {
 			clearDisk();
 		});
 
-		type PQErrorKind = "ResultTooLargeError" | "InsightError";
+		// type PQErrorKind = "ResultTooLargeError" | "InsightError";
 
-		folderTest<unknown, Promise<InsightResult[]>, PQErrorKind>(
+		folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests",
 			(input) => facade.performQuery(input),
 			"./test/resources/queries",
 			{
-				assertOnResult: (actual, expected) => {
+				assertOnResult: function assertResult(actual: unknown, expected, input): void {
 					// TODO add an assertion!
+					expect(actual).to.deep.members(expected);
+					const optionKeys = Object.keys(input["OPTIONS"]);
+
+					if (optionKeys.includes("ORDER")) {
+						expect(actual).to.deep.ordered.members(expected);
+					}
 				},
-				errorValidator: (error): error is PQErrorKind =>
-					error === "ResultTooLargeError" || error === "InsightError",
-				assertOnError: (actual, expected) => {
+				// errorValidator: (error): error is PQErrorKind =>
+					// error === "ResultTooLargeError" || error === "InsightError",
+				assertOnError: function assertError(actual: any, expected: Error): void {
 					// TODO add an assertion!
+					if (expected === "InsightError") {
+						expect(actual).to.be.an.instanceOf(InsightError);
+					} else if (expected === "ResultTooLargeError") {
+						expect(actual).to.be.an.instanceOf(ResultTooLargeError);
+					} else {
+						expect.fail("Unknown error");
+					}
 				},
 			}
 		);

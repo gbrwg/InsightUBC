@@ -132,7 +132,7 @@ class MComparison {
 		if (typeof getValue(val) !== "number") {
 			throw new InsightError("MComparison error: " + JSON.stringify(query));
 		}
-		if (!Key.isKey(getValue(val), ids)) {
+		if (!Key.isKey(getKey(val), ids)) {
 			throw new InsightError("Key error: " + getKey(query));
 		}
 

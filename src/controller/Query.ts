@@ -51,6 +51,9 @@ class Body {
 		if (key !== "WHERE") {
 			throw new InsightError("Body error: " + JSON.stringify(query));
 		}
+		if (Object.keys(query[key]).length === 0) {
+			throw new ResultTooLargeError();
+		}
 		QueryFilter.validate(getValue(query), ids);
 	}
 }
@@ -60,7 +63,7 @@ class Options {
 		const columns = Columns.perform( {COLUMNS: query["OPTIONS"]["COLUMNS"]}, data );
 		const keys: string[] = Object.keys(query);
 
-		if (keys.includes("ORDER")) {
+		if (Object.keys(query["OPTIONS"]).includes("ORDER")) {
 			return Order.perform(query, columns);
 		} else {
 			return columns;
@@ -111,13 +114,13 @@ class Columns {
 
 class Order {
 	public static perform(query: any, data: any[]): any[] {
-		const val = getValue(query);
+		const val = query["OPTIONS"]["ORDER"];
 		return data.sort((a: any, b: any) => {
 			const valA = a[val];
 			const valB = b[val];
 
 			if (typeof valA !== "number") {
-				return valA.localeCompare(b);
+				return valA.localeCompare(valB);
 			}
 			return valA - valB;
 		});

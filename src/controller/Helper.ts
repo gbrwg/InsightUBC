@@ -50,7 +50,7 @@ export default class Helper {
 					for (const r of res) {
 						fileSections.push({
 							uuid: String(r.id),
-							id: r.course,
+							id: r.Course,
 							title: r.Title,
 							instructor: r.Professor,
 							dept: r.Subject,
