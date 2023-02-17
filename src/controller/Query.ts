@@ -61,7 +61,6 @@ class Body {
 class Options {
 	public static perform(query: any, data: any[]): any[] {
 		const columns = Columns.perform( {COLUMNS: query["OPTIONS"]["COLUMNS"]}, data );
-		const keys: string[] = Object.keys(query);
 
 		if (Object.keys(query["OPTIONS"]).includes("ORDER")) {
 			return Order.perform(query, columns);
