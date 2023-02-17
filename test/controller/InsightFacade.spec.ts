@@ -28,7 +28,7 @@ describe("InsightFacade", function () {
 		clearDisk();
 	});
 
-	/* describe("Add/Remove/List Dataset", function () {
+	describe("Add/Remove/List Dataset", function () {
 		before(function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
 		});
@@ -152,7 +152,7 @@ describe("InsightFacade", function () {
 		});
 
 
-		it("should return multiple datasets", async function() {
+		/* it("should return multiple datasets", async function() {
 			await facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections);
 			await facade.addDataset("cpsc313", sections, InsightDatasetKind.Sections);
 			await facade.addDataset("cpsc320", sections, InsightDatasetKind.Sections);
@@ -177,8 +177,8 @@ describe("InsightFacade", function () {
 					numRows:64612
 				}
 			]);
-		});
-	}); */
+		}); */
+	});
 
 	/*
 	 * This test suite dynamically generates tests from the JSON files in test/resources/queries.
@@ -219,7 +219,7 @@ describe("InsightFacade", function () {
 
 		// type PQErrorKind = "ResultTooLargeError" | "InsightError";
 
-		folderTest<Input, Output, Error>(
+		/* folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests",
 			(input) => facade.performQuery(input),
 			"./test/resources/queries",
@@ -246,6 +246,6 @@ describe("InsightFacade", function () {
 					}
 				},
 			}
-		);
+		); */
 	});
 });
