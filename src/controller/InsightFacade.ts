@@ -45,8 +45,8 @@ export default class InsightFacade implements IInsightFacade {
 					if (result.length === 0) {
 						reject(new InsightError("invalid dataset"));
 					}
-					this.writeToDisk(id, result);
 					this.datasets.set(id, result);
+					this.writeToDisk(id, result);
 					resolve(Array.from(this.datasets.keys()));
 				})
 				.catch(() => {
@@ -56,29 +56,23 @@ export default class InsightFacade implements IInsightFacade {
 	}
 	private writeToDisk(id: string, result: string[]) {
 		let path = "./data";
-		fs.ensureDir(path)
-			.then(() => {
-				return fs.writeJsonSync("./data " + id + ".json", result);
-			})
-			.catch((err) => {
-				console.error(err);
-			});
+		fs.ensureDirSync(path);
+		fs.ensureFileSync("./data/" + id + ".json");
+		fs.outputJSONSync("./data/" + id + ".json", JSON.stringify(result));
 	}
 
 	private readFromDisk() {
-
 		let path = "./data";
-		fs.readdir(path, (err, files) => {
-			if (err) {
-				return;
-			} else {
-				files.forEach((file) => {
-					const id = file.split(".")[0];
-					const data = fs.readJsonSync(path + "/" + file);
-					this.datasets.set(id, data);
-				});
-			}
+		if (!fs.existsSync("./data")) {
+			return;
+		}
+		let filenames = fs.readdirSync(path);
+		filenames.forEach((file) => {
+			const id = file.split(".")[0];
+			const data = JSON.parse(fs.readJsonSync(path + "/" + file));
+			this.datasets.set(id, data);
 		});
+
 
 	}
 	public removeDataset(id: string): Promise<string> {
