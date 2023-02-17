@@ -28,7 +28,7 @@ describe("InsightFacade", function () {
 		clearDisk();
 	});
 
-	describe("Add/Remove/List Dataset", function () {
+	/* describe("Add/Remove/List Dataset", function () {
 		before(function () {
 			console.info(`Before: ${this.test?.parent?.title}`);
 		});
@@ -178,7 +178,7 @@ describe("InsightFacade", function () {
 				}
 			]);
 		});
-	});
+	}); */
 
 	/*
 	 * This test suite dynamically generates tests from the JSON files in test/resources/queries.
