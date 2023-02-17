@@ -63,7 +63,8 @@ class Options {
 		const columns = Columns.perform( {COLUMNS: query["OPTIONS"]["COLUMNS"]}, data );
 		const keys: string[] = Object.keys(query);
 
-		if (Object.keys(query["OPTIONS"]).includes("ORDER")) {
+		// if (Object.keys(query["OPTIONS"]).includes("ORDER")) {
+		if (keys.includes("ORDER")) {
 			return Order.perform(query, columns);
 		} else {
 			return columns;
@@ -114,13 +115,15 @@ class Columns {
 
 class Order {
 	public static perform(query: any, data: any[]): any[] {
-		const val = query["OPTIONS"]["ORDER"];
+		// const val = query["OPTIONS"]["ORDER"];
+		const val = getValue(query);
 		return data.sort((a: any, b: any) => {
 			const valA = a[val];
 			const valB = b[val];
 
 			if (typeof valA !== "number") {
-				return valA.localeCompare(valB);
+				return valA.localeCompare(b);
+				// return valA.localeCompare(valB);
 			}
 			return valA - valB;
 		});
