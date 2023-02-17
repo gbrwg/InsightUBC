@@ -1,13 +1,5 @@
-import {
-	IInsightFacade,
-	InsightDatasetKind,
-	InsightError,
-	InsightResult, NotFoundError,
-	ResultTooLargeError
-} from "../../src/controller/IInsightFacade";
+import {IInsightFacade, InsightDatasetKind, InsightError, NotFoundError} from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
-
-import {folderTest} from "@ubccpsc310/folder-test";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
@@ -26,6 +18,59 @@ describe("InsightFacade", function () {
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
+	});
+
+	describe("Handling Crashes", function() {
+		before(function() {
+			console.info(`Before: ${this.test?.parent?.title}`);
+		});
+
+		beforeEach(function () {
+			// This section resets the insightFacade instance
+			// This runs before each test
+			console.info(`BeforeTest: ${this.currentTest?.title}`);
+			facade = new InsightFacade();
+		});
+
+		after(function () {
+			console.info(`After: ${this.test?.parent?.title}`);
+		});
+
+		afterEach(function () {
+			// This section resets the data directory (removing any cached data)
+			// This runs after each test, which should make each test independent of the previous one
+			console.info(`AfterTest: ${this.currentTest?.title}`);
+			clearDisk();
+		});
+
+		it("should handle addDataset after crash", async function() {
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			let facade2 = new InsightFacade();
+			const result = await facade2.addDataset("sections2", sections, InsightDatasetKind.Sections);
+			expect(result).to.have.same.members(["sections2", "sections"]);
+		});
+
+		it("should handle list after crash", async function() {
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			let facade2 = new InsightFacade();
+			const result = await facade2.listDatasets();
+			expect(result).to.have.lengthOf(1);
+			expect(result).to.deep.equal([
+				{
+					id: "sections",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				}
+			]);
+		});
+
+		it("should handle remove after crash", async function() {
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			let facade2 = new InsightFacade();
+			const result = await facade2.removeDataset("sections");
+			expect(result).to.equal("sections");
+		});
+
 	});
 
 	describe("Add/Remove/List Dataset", function () {
