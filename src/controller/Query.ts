@@ -30,13 +30,18 @@ export class Query {
 		}
 
 		const ids = new Set<string>();
-		Body.validate( {WHERE: query["WHERE"]}, ids );
 		Options.validate(query["OPTIONS"], ids);
+		this.validateNumIds(ids);
+		Body.validate({WHERE: query["WHERE"]}, ids);
+		this.validateNumIds(ids);
 
-		if (ids.size === 1) {
-			return Array.from(ids.values())[0];
+		return Array.from(ids.values())[0];
+	}
+
+	private static validateNumIds(ids: Set<string>) {
+		if (ids.size > 1) {
+			throw new InsightError("Too many dataset ids");
 		}
-		throw new InsightError("Too many dataset ids");
 	}
 }
 

@@ -177,6 +177,20 @@ class SComparison {
 		if (typeof s !== "string") {
 			throw new InsightError("SComparison error: " + JSON.stringify(query));
 		}
+
+		const numAsterisk: number = Array.from(s).filter((char: string)=>{
+			return char === "*";
+		}).length;
+
+		if (numAsterisk > 2) {
+			throw new InsightError("Invalid asterisks");
+		}
+		if (numAsterisk === 2 && !(s.startsWith("*") && s.endsWith("*"))) {
+			throw new InsightError("Invalid asterisks");
+		}
+		if (numAsterisk === 1 && !(s.startsWith("*") || s.endsWith("*"))) {
+			throw new InsightError("Invalid asterisks");
+		}
 		if (s.includes("*") && (s.indexOf("*") > 0 && s.indexOf("*") < s.length - 1)) {
 			throw new InsightError("Asterisks position error");
 		}

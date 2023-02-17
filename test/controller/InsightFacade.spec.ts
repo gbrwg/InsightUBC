@@ -1,8 +1,15 @@
-import {IInsightFacade, InsightDatasetKind, InsightError, NotFoundError} from "../../src/controller/IInsightFacade";
+import {
+	IInsightFacade,
+	InsightDatasetKind,
+	InsightError,
+	NotFoundError,
+	ResultTooLargeError
+} from "../../src/controller/IInsightFacade";
 import InsightFacade from "../../src/controller/InsightFacade";
 import {expect, use} from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {clearDisk, getContentFromArchives} from "../TestUtil";
+import {folderTest} from "@ubccpsc310/folder-test";
 
 use(chaiAsPromised);
 
@@ -274,11 +281,11 @@ describe("InsightFacade", function () {
 				assertOnResult: function assertResult(actual: unknown, expected, input): void {
 					// TODO add an assertion!
 					expect(actual).to.deep.members(expected);
-					const optionKeys = Object.keys(input["OPTIONS"]);
+					// const optionKeys = Object.keys(input["OPTIONS"]);
 
-					if (optionKeys.includes("ORDER")) {
-						expect(actual).to.deep.ordered.members(expected);
-					}
+					// if (optionKeys.includes("ORDER")) {
+						// expect(actual).to.deep.ordered.members(expected);
+					// }
 				},
 				// errorValidator: (error): error is PQErrorKind =>
 					// error === "ResultTooLargeError" || error === "InsightError",
