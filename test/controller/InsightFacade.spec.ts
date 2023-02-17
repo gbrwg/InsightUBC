@@ -11,10 +11,12 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let sectionsmall: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
 		sections = getContentFromArchives("pair.zip");
+		sectionsmall = getContentFromArchives("smallpair.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -44,14 +46,14 @@ describe("InsightFacade", function () {
 		});
 
 		it("should handle addDataset after crash", async function() {
-			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("sections", sectionsmall, InsightDatasetKind.Sections);
 			let facade2 = new InsightFacade();
-			const result = await facade2.addDataset("sections2", sections, InsightDatasetKind.Sections);
+			const result = await facade2.addDataset("sections2", sectionsmall, InsightDatasetKind.Sections);
 			expect(result).to.have.same.members(["sections2", "sections"]);
 		});
 
 		it("should handle list after crash", async function() {
-			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("sections", sectionsmall, InsightDatasetKind.Sections);
 			let facade2 = new InsightFacade();
 			const result = await facade2.listDatasets();
 			expect(result).to.have.lengthOf(1);
@@ -59,7 +61,7 @@ describe("InsightFacade", function () {
 				{
 					id: "sections",
 					kind: InsightDatasetKind.Sections,
-					numRows:64612
+					numRows:3767
 				}
 			]);
 		});
@@ -173,8 +175,8 @@ describe("InsightFacade", function () {
 		});
 
 		it("should remove correct dataset", async function() {
-			await facade.addDataset("data", sections, InsightDatasetKind.Sections);
-			await facade.addDataset("data2", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("data", sectionsmall, InsightDatasetKind.Sections);
+			await facade.addDataset("data2", sectionsmall, InsightDatasetKind.Sections);
 			const result1 = await facade.removeDataset("data2");
 
 			const result = await facade.listDatasets();
@@ -197,10 +199,10 @@ describe("InsightFacade", function () {
 		});
 
 
-		/* it("should return multiple datasets", async function() {
-			await facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections);
-			await facade.addDataset("cpsc313", sections, InsightDatasetKind.Sections);
-			await facade.addDataset("cpsc320", sections, InsightDatasetKind.Sections);
+		it("should return multiple datasets", async function() {
+			await facade.addDataset("cpsc310", sectionsmall, InsightDatasetKind.Sections);
+			await facade.addDataset("cpsc313", sectionsmall, InsightDatasetKind.Sections);
+			await facade.addDataset("cpsc320", sectionsmall, InsightDatasetKind.Sections);
 
 			const result = await facade.listDatasets();
 
@@ -209,20 +211,20 @@ describe("InsightFacade", function () {
 				{
 					id: "cpsc310",
 					kind: InsightDatasetKind.Sections,
-					numRows:64612
+					numRows:3767
 				},
 				{
 					id: "cpsc313",
 					kind: InsightDatasetKind.Sections,
-					numRows:64612
+					numRows:3767
 				},
 				{
 					id: "cpsc320",
 					kind: InsightDatasetKind.Sections,
-					numRows:64612
+					numRows:3767
 				}
 			]);
-		}); */
+		});
 	});
 
 	/*
