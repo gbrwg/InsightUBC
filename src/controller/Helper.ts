@@ -58,7 +58,7 @@ export default class Helper {
 							pass: r.Pass,
 							fail: r.Fail,
 							audit: r.Audit,
-							year: r.Section === "overall" ? 1900 : Number(r.year),
+							year: r.Section === "overall" ? 1900 : Number(r.Year),
 						});
 					}
 					return fileSections;
@@ -71,5 +71,4 @@ export default class Helper {
 			return sections;
 		});
 	}
-
 }
