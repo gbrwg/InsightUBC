@@ -132,7 +132,7 @@ class MComparison {
 		if (typeof getValue(val) !== "number") {
 			throw new InsightError("MComparison error: " + JSON.stringify(query));
 		}
-		if (!Key.isKey(getKey(val), ids)) {
+		if (!Key.isMKey(getKey(val), ids)) {
 			throw new InsightError("Key error: " + getKey(query));
 		}
 
@@ -150,7 +150,7 @@ class SComparison {
 		if (pattern.startsWith("*") && pattern.endsWith("*")) {
 			return data.filter((d) => {
 				const s: string = d[field];
-				return s.includes(pattern.replace("*", ""));
+				return s.includes(pattern.replaceAll("*", ""));
 			});
 		} else if (pattern.startsWith("*")) {
 			return data.filter((d) => {
@@ -178,7 +178,7 @@ class SComparison {
 			throw new InsightError("SComparison error: " + JSON.stringify(query));
 		}
 
-		const numAsterisk: number = Array.from(s).filter((char: string)=>{
+		const numAsterisk: number = Array.from(s).filter((char: string) => {
 			return char === "*";
 		}).length;
 
@@ -194,7 +194,7 @@ class SComparison {
 		if (s.includes("*") && (s.indexOf("*") > 0 && s.indexOf("*") < s.length - 1)) {
 			throw new InsightError("Asterisks position error");
 		}
-		if (!Key.isKey(getKey(val), ids)) {
+		if (!Key.isSKey(getKey(val), ids)) {
 			throw new InsightError("Key error: " + getKey(query));
 		}
 
