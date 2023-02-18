@@ -32,9 +32,8 @@ export class Query {
 		const ids = new Set<string>();
 		Options.validate(query["OPTIONS"], ids);
 		this.validateNumIds(ids);
-		Body.validate({WHERE: query["WHERE"]}, ids);
+		Body.validate( {WHERE: query["WHERE"]}, ids );
 		this.validateNumIds(ids);
-
 		return Array.from(ids.values())[0];
 	}
 
@@ -145,7 +144,7 @@ export class Key {
 		return this.isMKey(key, ids) || this.isSKey(key, ids);
 	}
 
-	private static isMKey(key: string, ids: Set<string>): boolean {
+	public static isMKey(key: string, ids: Set<string>): boolean {
 		const parts = key.split("_");
 
 		if (parts.length !== 2) {
@@ -161,7 +160,7 @@ export class Key {
 		return true;
 	}
 
-	private static isSKey(key: string, ids: Set<string>): boolean {
+	public static isSKey(key: string, ids: Set<string>): boolean {
 		const parts = key.split("_");
 
 		if (parts.length !== 2) {
