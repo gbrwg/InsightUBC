@@ -40,15 +40,15 @@ so that I know where my classes are.
 
 #### Definitions of Done(s)
 
-Scenario 1: \invalid building name\
-Given: \The user is on the room finder section\
-When: \The user enters an invalid building name and clicks "Search"  \
-Then: \The application returns an error on the dashboard in red telling the user to try again>
+Scenario 1: invalid building name\
+Given: The user is on the room finder section\
+When: The user enters an invalid building name and clicks "Search"  \
+Then: The application returns an error on the dashboard in red telling the user to try again>
 
-Scenario 2: \valid building name\
-Given: \The user is on the room finder section \
-When: \The user enters a valid building name and clicks "Search" \
-Then: \The application returns the address on the dashboard
+Scenario 2: valid building name\
+Given: The user is on the room finder section \
+When: The user enters a valid building name and clicks "Search" \
+Then: The application returns the address on the dashboard
 
 ### Others
 
