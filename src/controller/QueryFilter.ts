@@ -26,6 +26,10 @@ export class QueryFilter {
 	public static perform(query: any, data: any[]): any[] {
 		const key = getKey(query);
 
+		if (!key) {
+			return data;
+		}
+
 		if (["AND", "OR"].includes(key)) {
 			return LogicComparison.perform(query, data);
 		}
@@ -108,7 +112,7 @@ class MComparison {
 	public static perform(query: any, data: any[]): any[] {
 		const key = getKey(query);
 		const val = getValue(query);
-		const field = getKey(val).split("_")[1];
+		const field = getKey(val);
 
 		if (key === "GT") {
 			return data.filter((d) => {
@@ -144,7 +148,7 @@ class MComparison {
 class SComparison {
 	public static perform(query: any, data: any[]): any[] {
 		const val = getValue(query);
-		const field = getKey(val).split("_")[1];
+		const field = getKey(val);
 		const pattern = getValue(val);
 
 		if (pattern.startsWith("*") && pattern.endsWith("*")) {
