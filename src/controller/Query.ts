@@ -1,6 +1,16 @@
-import {InsightError, ResultTooLargeError,} from "./IInsightFacade";
-import {getKey, getValue, QueryFilter} from "./QueryFilter";
-import {ApplyKey, Transformations} from "./QueryTransformations";
+import {
+	InsightError,
+	ResultTooLargeError,
+} from "./IInsightFacade";
+import {
+	getKey,
+	getValue,
+	QueryFilter,
+} from "./QueryFilter";
+import {
+	ApplyKey,
+	Transformations,
+} from "./QueryTransformations";
 
 export class Query {
 	public static perform(query: any, data: any[], id: string): any[] {

@@ -1,0 +1,50 @@
+{
+	"title": "column key not in transformation",
+	"input": {
+		"WHERE": {},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_shortname"
+			],
+			"APPLY": [
+				{
+					"maxSeats": {
+						"MAX": "rooms_seats"
+					}
+				},
+				{
+					"minSeats": {
+						"MIN": "rooms_seats"
+					}
+				},
+				{
+					"averageSeats": {
+						"AVG": "rooms_seats"
+					}
+				},
+				{
+					"countRooms": {
+						"COUNT": "rooms_seats"
+					}
+				},
+				{
+					"sumSeats": {
+						"SUM": "rooms_seats"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_shortname",
+				"rooms_furniture",
+				"minSeats",
+				"averageSeats",
+				"countRooms",
+				"sumSeats"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

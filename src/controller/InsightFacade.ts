@@ -10,6 +10,7 @@ import {
 import fs from "fs-extra";
 import Helper from "./Helper";
 import {Query} from "./Query";
+import RoomDataSetHelper from "./RoomDataSetHelper";
 
 
 /**
@@ -39,18 +40,33 @@ export default class InsightFacade implements IInsightFacade {
 				reject(new InsightError("Cannot add existing ID"));
 			}
 			// parse file
-			this.helper.processData(content)
-				.then((result) => {
-					if (result.length === 0) {
-						reject(new InsightError("invalid dataset"));
-					}
-					this.datasets.set(id, result);
-					this.writeToDisk(id, result);
-					resolve(Array.from(this.datasets.keys()));
-				})
-				.catch(() => {
-					reject(new InsightError());
-				});
+			if (kind === InsightDatasetKind.Rooms) {
+				RoomDataSetHelper.process(content)
+					.then((result) => {
+						if (result.length === 0) {
+							reject(new InsightError("invalid dataset"));
+						}
+						this.datasets.set(id, result);
+						this.writeToDisk(id, result);
+						resolve(Array.from(this.datasets.keys()));
+					})
+					.catch(() => {
+						reject(new InsightError());
+					});
+			} else {
+				this.helper.processData(content)
+					.then((result) => {
+						if (result.length === 0) {
+							reject(new InsightError("invalid dataset"));
+						}
+						this.datasets.set(id, result);
+						this.writeToDisk(id, result);
+						resolve(Array.from(this.datasets.keys()));
+					})
+					.catch(() => {
+						reject(new InsightError());
+					});
+			}
 		});
 	}
 

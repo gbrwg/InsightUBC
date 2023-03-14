@@ -18,10 +18,12 @@ describe("InsightFacade", function () {
 
 	// Declare datasets used in tests. You should add more datasets like this!
 	let sections: string;
+	let campas: string;
 
 	before(function () {
 		// This block runs once and loads the datasets.
 		sections = getContentFromArchives("pair.zip");
+		campas = getContentFromArchives("campus.zip");
 
 		// Just in case there is anything hanging around from a previous run of the test suite
 		clearDisk();
@@ -57,6 +59,12 @@ describe("InsightFacade", function () {
 			expect(result).to.have.same.members(["sections2", "sections"]);
 		});
 
+		// add room
+		it("should handle room addDataset", async function() {
+			const result = await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
+			expect(result).to.have.same.members(["rooms"]);
+		});
+
 		it("should handle list after crash", async function() {
 			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
 			let facade2 = new InsightFacade();
@@ -66,7 +74,7 @@ describe("InsightFacade", function () {
 				{
 					id: "sections",
 					kind: InsightDatasetKind.Sections,
-					numRows:3767
+					numRows:64612
 				}
 			]);
 		});
@@ -104,7 +112,7 @@ describe("InsightFacade", function () {
 		});
 
 		// This is a unit test. You should create more like this!
-		it ("should reject with  an empty dataset id", function() {
+		it ("should reject with an empty dataset id", function() {
 			const result = facade.addDataset("", sections, InsightDatasetKind.Sections);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
@@ -247,10 +255,13 @@ describe("InsightFacade", function () {
 			clearDisk();
 
 			facade = new InsightFacade();
-			const content = getContentFromArchives("pair.zip");
-			return facade.addDataset("sections", content, InsightDatasetKind.Sections)
+			const sectionContent = getContentFromArchives("pair.zip");
+			const roomContent = getContentFromArchives("campus.zip");
+			return facade.addDataset("sections", sectionContent, InsightDatasetKind.Sections)
 				.then((res) => {
-					return facade.addDataset("courses", content, InsightDatasetKind.Sections);
+					return facade.addDataset("courses", sectionContent, InsightDatasetKind.Sections);
+				}).then((res) => {
+					return facade.addDataset("rooms", roomContent, InsightDatasetKind.Rooms);
 				}).catch((err)=>{
 					console.log("Can not add courses and/or sections for perform query test");
 				});
