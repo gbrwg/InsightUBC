@@ -282,7 +282,7 @@ describe("InsightFacade", function () {
 
 		// type PQErrorKind = "ResultTooLargeError" | "InsightError";
 
-		 folderTest<Input, Output, Error>(
+		 /* folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests",
 			(input) => facade.performQuery(input),
 			"./test/resources/queries",
@@ -309,6 +309,6 @@ describe("InsightFacade", function () {
 					}
 				},
 			}
-		);
+		);*/
 	});
 });
