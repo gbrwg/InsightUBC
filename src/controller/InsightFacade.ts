@@ -10,6 +10,7 @@ import {
 import fs from "fs-extra";
 import Helper from "./Helper";
 import {Query} from "./Query";
+import RoomDataSetHelper from "./RoomDataSetHelper";
 
 
 /**
@@ -39,21 +40,36 @@ export default class InsightFacade implements IInsightFacade {
 				reject(new InsightError("Cannot add existing ID"));
 			}
 			// parse file
-
-			this.helper.processData(content)
-				.then((result) => {
-					if (result.length === 0) {
-						reject(new InsightError("invalid dataset"));
-					}
-					this.datasets.set(id, result);
-					this.writeToDisk(id, result);
-					resolve(Array.from(this.datasets.keys()));
-				})
-				.catch(() => {
-					reject(new InsightError());
-				});
+			if (kind === InsightDatasetKind.Rooms) {
+				RoomDataSetHelper.process(content)
+					.then((result) => {
+						if (result.length === 0) {
+							reject(new InsightError("invalid dataset"));
+						}
+						this.datasets.set(id, result);
+						this.writeToDisk(id, result);
+						resolve(Array.from(this.datasets.keys()));
+					})
+					.catch(() => {
+						reject(new InsightError());
+					});
+			} else {
+				this.helper.processData(content)
+					.then((result) => {
+						if (result.length === 0) {
+							reject(new InsightError("invalid dataset"));
+						}
+						this.datasets.set(id, result);
+						this.writeToDisk(id, result);
+						resolve(Array.from(this.datasets.keys()));
+					})
+					.catch(() => {
+						reject(new InsightError());
+					});
+			}
 		});
 	}
+
 	private writeToDisk(id: string, result: string[]) {
 		let path = "./data";
 		fs.ensureDirSync(path);
@@ -75,6 +91,7 @@ export default class InsightFacade implements IInsightFacade {
 
 
 	}
+
 	public removeDataset(id: string): Promise<string> {
 
 		return new Promise<string>((resolve, reject) => {
@@ -95,10 +112,11 @@ export default class InsightFacade implements IInsightFacade {
 			try {
 				const id: string = Query.validate(query);
 				const data = this.datasets.get(id);
+
 				if (!data) {
 					throw new InsightError("No such dataset");
 				}
-				const result = Query.perform(query, data);
+				const result = Query.perform(query, data, id);
 				resolve(result);
 			} catch (error) {
 				reject(error);

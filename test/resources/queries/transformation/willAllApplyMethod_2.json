@@ -1,0 +1,403 @@
+{
+	"title": "will all apply method",
+	"input": {
+		"WHERE": {},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_shortname"
+			],
+			"APPLY": [
+				{
+					"maxSeats": {
+						"MAX": "rooms_seats"
+					}
+				},
+				{
+					"minSeats": {
+						"MIN": "rooms_seats"
+					}
+				},
+				{
+					"averageSeats": {
+						"AVG": "rooms_seats"
+					}
+				},
+				{
+					"countRooms": {
+						"COUNT": "rooms_seats"
+					}
+				},
+				{
+					"sumSeats": {
+						"SUM": "rooms_seats"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_shortname",
+				"maxSeats",
+				"minSeats",
+				"averageSeats",
+				"countRooms",
+				"sumSeats"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"rooms_shortname": "ALRD",
+			"maxSeats": 94,
+			"minSeats": 20,
+			"averageSeats": 45.6,
+			"countRooms": 4,
+			"sumSeats": 228
+		},
+		{
+			"rooms_shortname": "ANSO",
+			"maxSeats": 90,
+			"minSeats": 26,
+			"averageSeats": 46.5,
+			"countRooms": 4,
+			"sumSeats": 186
+		},
+		{
+			"rooms_shortname": "AERL",
+			"maxSeats": 144,
+			"minSeats": 144,
+			"averageSeats": 144,
+			"countRooms": 1,
+			"sumSeats": 144
+		},
+		{
+			"rooms_shortname": "AUDX",
+			"maxSeats": 21,
+			"minSeats": 20,
+			"averageSeats": 20.5,
+			"countRooms": 2,
+			"sumSeats": 41
+		},
+		{
+			"rooms_shortname": "BIOL",
+			"maxSeats": 228,
+			"minSeats": 16,
+			"averageSeats": 84,
+			"countRooms": 3,
+			"sumSeats": 336
+		},
+		{
+			"rooms_shortname": "BRKX",
+			"maxSeats": 70,
+			"minSeats": 24,
+			"averageSeats": 47,
+			"countRooms": 2,
+			"sumSeats": 94
+		},
+		{
+			"rooms_shortname": "BUCH",
+			"maxSeats": 275,
+			"minSeats": 18,
+			"averageSeats": 52.3,
+			"countRooms": 19,
+			"sumSeats": 3190
+		},
+		{
+			"rooms_shortname": "CIRS",
+			"maxSeats": 426,
+			"minSeats": 426,
+			"averageSeats": 426,
+			"countRooms": 1,
+			"sumSeats": 426
+		},
+		{
+			"rooms_shortname": "CHBE",
+			"maxSeats": 200,
+			"minSeats": 60,
+			"averageSeats": 118,
+			"countRooms": 3,
+			"sumSeats": 354
+		},
+		{
+			"rooms_shortname": "CHEM",
+			"maxSeats": 265,
+			"minSeats": 90,
+			"averageSeats": 152.17,
+			"countRooms": 4,
+			"sumSeats": 913
+		},
+		{
+			"rooms_shortname": "CEME",
+			"maxSeats": 100,
+			"minSeats": 22,
+			"averageSeats": 48.17,
+			"countRooms": 6,
+			"sumSeats": 289
+		},
+		{
+			"rooms_shortname": "EOSM",
+			"maxSeats": 50,
+			"minSeats": 50,
+			"averageSeats": 50,
+			"countRooms": 1,
+			"sumSeats": 50
+		},
+		{
+			"rooms_shortname": "ESB",
+			"maxSeats": 350,
+			"minSeats": 80,
+			"averageSeats": 193.33,
+			"countRooms": 3,
+			"sumSeats": 580
+		},
+		{
+			"rooms_shortname": "FNH",
+			"maxSeats": 99,
+			"minSeats": 12,
+			"averageSeats": 43.83,
+			"countRooms": 6,
+			"sumSeats": 263
+		},
+		{
+			"rooms_shortname": "FSC",
+			"maxSeats": 250,
+			"minSeats": 18,
+			"averageSeats": 62.1,
+			"countRooms": 7,
+			"sumSeats": 621
+		},
+		{
+			"rooms_shortname": "FORW",
+			"maxSeats": 63,
+			"minSeats": 35,
+			"averageSeats": 47.33,
+			"countRooms": 3,
+			"sumSeats": 142
+		},
+		{
+			"rooms_shortname": "LASR",
+			"maxSeats": 94,
+			"minSeats": 20,
+			"averageSeats": 54.17,
+			"countRooms": 5,
+			"sumSeats": 325
+		},
+		{
+			"rooms_shortname": "FRDM",
+			"maxSeats": 160,
+			"minSeats": 160,
+			"averageSeats": 160,
+			"countRooms": 1,
+			"sumSeats": 160
+		},
+		{
+			"rooms_shortname": "GEOG",
+			"maxSeats": 225,
+			"minSeats": 21,
+			"averageSeats": 77.38,
+			"countRooms": 7,
+			"sumSeats": 619
+		},
+		{
+			"rooms_shortname": "HEBB",
+			"maxSeats": 375,
+			"minSeats": 54,
+			"averageSeats": 134.25,
+			"countRooms": 2,
+			"sumSeats": 537
+		},
+		{
+			"rooms_shortname": "HENN",
+			"maxSeats": 257,
+			"minSeats": 30,
+			"averageSeats": 109.67,
+			"countRooms": 5,
+			"sumSeats": 658
+		},
+		{
+			"rooms_shortname": "ANGU",
+			"maxSeats": 260,
+			"minSeats": 16,
+			"averageSeats": 55.21,
+			"countRooms": 15,
+			"sumSeats": 1546
+		},
+		{
+			"rooms_shortname": "DMP",
+			"maxSeats": 160,
+			"minSeats": 40,
+			"averageSeats": 88,
+			"countRooms": 4,
+			"sumSeats": 440
+		},
+		{
+			"rooms_shortname": "IONA",
+			"maxSeats": 100,
+			"minSeats": 50,
+			"averageSeats": 75,
+			"countRooms": 2,
+			"sumSeats": 150
+		},
+		{
+			"rooms_shortname": "IBLC",
+			"maxSeats": 154,
+			"minSeats": 8,
+			"averageSeats": 31.56,
+			"countRooms": 10,
+			"sumSeats": 568
+		},
+		{
+			"rooms_shortname": "SOWK",
+			"maxSeats": 68,
+			"minSeats": 12,
+			"averageSeats": 28.71,
+			"countRooms": 5,
+			"sumSeats": 201
+		},
+		{
+			"rooms_shortname": "LSK",
+			"maxSeats": 205,
+			"minSeats": 42,
+			"averageSeats": 126.25,
+			"countRooms": 4,
+			"sumSeats": 505
+		},
+		{
+			"rooms_shortname": "LSC",
+			"maxSeats": 350,
+			"minSeats": 125,
+			"averageSeats": 275,
+			"countRooms": 2,
+			"sumSeats": 825
+		},
+		{
+			"rooms_shortname": "MCLD",
+			"maxSeats": 136,
+			"minSeats": 40,
+			"averageSeats": 83.83,
+			"countRooms": 5,
+			"sumSeats": 503
+		},
+		{
+			"rooms_shortname": "MCML",
+			"maxSeats": 200,
+			"minSeats": 6,
+			"averageSeats": 30.16,
+			"countRooms": 8,
+			"sumSeats": 573
+		},
+		{
+			"rooms_shortname": "MATH",
+			"maxSeats": 224,
+			"minSeats": 25,
+			"averageSeats": 61.88,
+			"countRooms": 5,
+			"sumSeats": 495
+		},
+		{
+			"rooms_shortname": "MATX",
+			"maxSeats": 106,
+			"minSeats": 106,
+			"averageSeats": 106,
+			"countRooms": 1,
+			"sumSeats": 106
+		},
+		{
+			"rooms_shortname": "SCRF",
+			"maxSeats": 280,
+			"minSeats": 20,
+			"averageSeats": 45.64,
+			"countRooms": 7,
+			"sumSeats": 1004
+		},
+		{
+			"rooms_shortname": "ORCH",
+			"maxSeats": 72,
+			"minSeats": 16,
+			"averageSeats": 31.52,
+			"countRooms": 5,
+			"sumSeats": 662
+		},
+		{
+			"rooms_shortname": "PHRM",
+			"maxSeats": 236,
+			"minSeats": 7,
+			"averageSeats": 48.91,
+			"countRooms": 5,
+			"sumSeats": 538
+		},
+		{
+			"rooms_shortname": "PCOH",
+			"maxSeats": 40,
+			"minSeats": 24,
+			"averageSeats": 30,
+			"countRooms": 2,
+			"sumSeats": 240
+		},
+		{
+			"rooms_shortname": "OSBO",
+			"maxSeats": 442,
+			"minSeats": 39,
+			"averageSeats": 173.67,
+			"countRooms": 3,
+			"sumSeats": 521
+		},
+		{
+			"rooms_shortname": "SPPH",
+			"maxSeats": 66,
+			"minSeats": 12,
+			"averageSeats": 27.67,
+			"countRooms": 6,
+			"sumSeats": 166
+		},
+		{
+			"rooms_shortname": "SRC",
+			"maxSeats": 299,
+			"minSeats": 299,
+			"averageSeats": 299,
+			"countRooms": 1,
+			"sumSeats": 897
+		},
+		{
+			"rooms_shortname": "UCLL",
+			"maxSeats": 55,
+			"minSeats": 30,
+			"averageSeats": 40.75,
+			"countRooms": 3,
+			"sumSeats": 163
+		},
+		{
+			"rooms_shortname": "MGYM",
+			"maxSeats": 40,
+			"minSeats": 25,
+			"averageSeats": 32.5,
+			"countRooms": 2,
+			"sumSeats": 65
+		},
+		{
+			"rooms_shortname": "WESB",
+			"maxSeats": 325,
+			"minSeats": 102,
+			"averageSeats": 213.5,
+			"countRooms": 2,
+			"sumSeats": 427
+		},
+		{
+			"rooms_shortname": "SWNG",
+			"maxSeats": 190,
+			"minSeats": 27,
+			"averageSeats": 64.59,
+			"countRooms": 5,
+			"sumSeats": 1421
+		},
+		{
+			"rooms_shortname": "WOOD",
+			"maxSeats": 503,
+			"minSeats": 10,
+			"averageSeats": 81.06,
+			"countRooms": 10,
+			"sumSeats": 1297
+		}
+	]
+}

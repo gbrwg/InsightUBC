@@ -1,0 +1,49 @@
+{
+	"title": "Invalid apply rule target key",
+	"input": {
+		"WHERE": {},
+		"TRANSFORMATIONS": {
+			"GROUP": [
+				"rooms_shortname"
+			],
+			"APPLY": [
+				{
+					"maxSeats": {
+						"MAX": "rooms_seats"
+					}
+				},
+				{
+					"minSeats": {
+						"MIN": "rooms_seats"
+					}
+				},
+				{
+					"averageSeats": {
+						"AVG": "rooms_seats"
+					}
+				},
+				{
+					"countRooms": {
+						"COUNT": "rooms_seats"
+					}
+				},
+				{
+					"sumSeats": {
+						"SUM": "countRooms"
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"rooms_shortname",
+				"minSeats",
+				"averageSeats",
+				"countRooms",
+				"sumSeats"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
