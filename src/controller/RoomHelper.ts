@@ -228,6 +228,7 @@ export default class RoomHelper {
 		}
 	}
 
+	// TODO
 	private getGeoLocation(buildings: Building[]) {
 		for(const b of buildings) {
 			if(b.address !== undefined) {
