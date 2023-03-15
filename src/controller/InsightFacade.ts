@@ -18,6 +18,12 @@ import RoomDataSetHelper from "./RoomDataSetHelper";
  * Method documentation is in IInsightFacade
  *
  */
+interface InsightDatabase {
+	id: string;
+	kind: InsightDatasetKind;
+	data: any[];
+}
+
 export default class InsightFacade implements IInsightFacade {
 	private helper: Helper;
 	private datasets: Map<string, any>;
@@ -32,7 +38,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		return new Promise<string[]>((resolve, reject) => {
 			// !id.trim() from https://stackoverflow.com/questions/10261986/how-to-detect-string-which-contains-only-spaces
-			if (kind !== "sections" || id === "" || id.includes("_") || !id.trim()) {
+			if ((kind !== "sections" && kind !== "rooms") || id === "" || id.includes("_") || !id.trim()) {
 				reject(new InsightError("invalid ID"));
 			}
 			// check duplicate
@@ -46,31 +52,37 @@ export default class InsightFacade implements IInsightFacade {
 						if (result.length === 0) {
 							reject(new InsightError("invalid dataset"));
 						}
-						this.datasets.set(id, result);
-						this.writeToDisk(id, result);
+
+						const value = {id:id, kind: InsightDatasetKind.Rooms, data: result};
+						this.datasets.set(id, value);
+						this.writeToDisk(id, value);
+						resolve(Array.from(this.datasets.keys()));
+					})
+					.catch(() => {
+						reject(new InsightError());
+					});
+			} else if (kind === InsightDatasetKind.Sections) {
+				this.helper.processData(content)
+					.then((result) => {
+						if (result.length === 0) {
+							reject(new InsightError("invalid dataset"));
+						}
+
+						let value = {id:id, kind: InsightDatasetKind.Sections, data: result};
+						this.datasets.set(id, value);
+						this.writeToDisk(id, value);
 						resolve(Array.from(this.datasets.keys()));
 					})
 					.catch(() => {
 						reject(new InsightError());
 					});
 			} else {
-				this.helper.processData(content)
-					.then((result) => {
-						if (result.length === 0) {
-							reject(new InsightError("invalid dataset"));
-						}
-						this.datasets.set(id, result);
-						this.writeToDisk(id, result);
-						resolve(Array.from(this.datasets.keys()));
-					})
-					.catch(() => {
-						reject(new InsightError());
-					});
+				throw new InsightError("Wrong InsightDatasetKind");
 			}
 		});
 	}
 
-	private writeToDisk(id: string, result: string[]) {
+	private writeToDisk(id: string, result: InsightDatabase) {
 		let path = "./data";
 		fs.ensureDirSync(path);
 		fs.ensureFileSync("./data/" + id + ".json");
@@ -86,7 +98,7 @@ export default class InsightFacade implements IInsightFacade {
 		filenames.forEach((file) => {
 			const id = file.split(".")[0];
 			const data = JSON.parse(fs.readJsonSync(path + "/" + file));
-			this.datasets.set(id, data);
+			this.datasets.set(id, {id:id, kind: data.kind, data: data.data});
 		});
 
 
@@ -116,7 +128,7 @@ export default class InsightFacade implements IInsightFacade {
 				if (!data) {
 					throw new InsightError("No such dataset");
 				}
-				const result = Query.perform(query, data, id);
+				const result = Query.perform(query, data["data"], id);
 				resolve(result);
 			} catch (error) {
 				reject(error);
@@ -127,8 +139,9 @@ export default class InsightFacade implements IInsightFacade {
 	public listDatasets(): Promise<InsightDataset[]> {
 		return new Promise((resolve) => {
 			const InsightDatasets: InsightDataset[] = [];
-			this.datasets.forEach((value: any[], key: string) => {
-				InsightDatasets.push({id: key, kind: InsightDatasetKind.Sections, numRows: value.length});
+			this.datasets.forEach((value: any, key: string) => {
+				const insightData = {id: key, kind: value["kind"], numRows: value.data.length};
+				InsightDatasets.push(insightData);
 			});
 			resolve(InsightDatasets);
 		});

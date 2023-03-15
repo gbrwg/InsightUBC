@@ -17,15 +17,14 @@ export class Query {
 		let datasetData = Query.injectDatasetId(data, id);
 		const qData: any[] = Body.perform(query, datasetData);
 
-		if (qData.length > 5000) {
-			throw new ResultTooLargeError("Result length is larger than 5000, " +
-				"the length is " + qData.length.toString());
-		}
-		if ("TRANSFORMATIONS" in query) {
+		if (!("TRANSFORMATIONS" in query)) {
+			Query.isResultTooLarge(qData);
+			return Options.perform(query, qData);
+		} else {
 			const aData = Transformations.perform( {TRANSFORMATIONS: query["TRANSFORMATIONS"]}, qData );
+			Query.isResultTooLarge(aData);
 			return Options.perform(query, aData);
 		}
-		return Options.perform(query, qData);
 	}
 
 	public static validate(query: any): string {
@@ -50,6 +49,13 @@ export class Query {
 		Body.validate( {WHERE: query["WHERE"]}, ids );
 		this.validateNumIds(ids);
 		return Array.from(ids.values())[0];
+	}
+
+	private static isResultTooLarge(data: any[]) {
+		if (data.length > 5000) {
+			throw new ResultTooLargeError("Result length is larger than 5000, " +
+				"the length is " + data.length.toString());
+		}
 	}
 
 	private static validateNumIds(ids: Set<string>) {
@@ -165,12 +171,26 @@ class Order {
 		});
 	}
 
+	private static getDirAndKeys(query: any) {
+		let val = query["OPTIONS"]["ORDER"];
+		let dir = "UP";
+		let keys: string[] = [];
+
+		if (typeof val !== "string") {
+			dir = val["dir"];
+			keys = keys.concat(val["keys"]);
+		} else {
+			keys.push(val);
+		}
+		return {dir, keys};
+	}
+
 	public static validate(query: any, columnKeys: string[], ids: Set<string>, applyKeys: string[]): void {
 		const sortValue = getValue(query);
 
 		if (typeof sortValue === "string") {
 			if (!applyKeys.includes(sortValue)) {
-				if(!sortValue.includes("_")){
+				if (!sortValue.includes("_")) {
 					throw new InsightError("Sort key is not apply key and does not have underscore");
 				}
 				ids.add((sortValue.split("_")[0]));
@@ -202,20 +222,6 @@ class Order {
 				throw new InsightError("ORDER key error");
 			}
 		}
-	}
-
-	private static getDirAndKeys(query: any) {
-		let val = query["OPTIONS"]["ORDER"];
-		let dir = "UP";
-		let keys: string[] = [];
-
-		if (typeof val !== "string") {
-			dir = val["dir"];
-			keys = keys.concat(val["keys"]);
-		} else {
-			keys.push(val);
-		}
-		return {dir, keys};
 	}
 }
 

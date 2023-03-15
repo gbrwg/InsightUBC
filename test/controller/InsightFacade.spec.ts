@@ -59,18 +59,25 @@ describe("InsightFacade", function () {
 			expect(result).to.have.same.members(["sections2", "sections"]);
 		});
 
-		// add room
-		it("should handle room addDataset", async function() {
-			const result = await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
-			expect(result).to.have.same.members(["rooms"]);
+		it("should handle add room dataset after crash", async function() {
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			let facade2 = new InsightFacade();
+			const result = await facade2.addDataset("rooms", campas, InsightDatasetKind.Rooms);
+			expect(result).to.have.same.members(["rooms", "sections"]);
 		});
 
 		it("should handle list after crash", async function() {
 			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
 			let facade2 = new InsightFacade();
 			const result = await facade2.listDatasets();
-			expect(result).to.have.lengthOf(1);
+			expect(result).to.have.lengthOf(2);
 			expect(result).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
 				{
 					id: "sections",
 					kind: InsightDatasetKind.Sections,
@@ -130,11 +137,6 @@ describe("InsightFacade", function () {
 		it("should reject duplicate ids", function() {
 			const result = facade.addDataset("dataset", sections, InsightDatasetKind.Sections)
 				.then(() => facade.addDataset("dataset", sections, InsightDatasetKind.Sections));
-			return expect(result).to.eventually.be.rejectedWith(InsightError);
-		});
-
-		it("should reject invalid dataset kind", function() {
-			const result = facade.addDataset("dataset", sections, InsightDatasetKind.Rooms);
 			return expect(result).to.eventually.be.rejectedWith(InsightError);
 		});
 
@@ -211,6 +213,120 @@ describe("InsightFacade", function () {
 			return expect(result).eventually.to.have.lengthOf(0);
 		});
 
+		// add room
+		it("should handle room addDataset", async function() {
+			const r = await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
+			expect(r).to.have.same.members(["rooms"]);
+			const result = await facade.listDatasets();
+			expect(result).to.have.lengthOf(1);
+			expect(result).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				}
+			]);
+		});
+
+		it("should handle multiple room addDataset", async function() {
+			const r = await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
+			expect(r).to.have.same.members(["rooms"]);
+			const result = await facade.listDatasets();
+			expect(result).to.have.lengthOf(1);
+			expect(result).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				}
+			]);
+
+			const r1 = await facade.addDataset("rooms1", campas, InsightDatasetKind.Rooms);
+			expect(r1).to.have.same.members(["rooms","rooms1"]);
+			const result1 = await facade.listDatasets();
+			expect(result1).to.have.lengthOf(2);
+			expect(result1).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "rooms1",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				}
+			]);
+
+			const r2 = await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+			expect(r2).to.have.same.members(["rooms","rooms1","sections"]);
+			const result2 = await facade.listDatasets();
+			expect(result2).to.have.lengthOf(3);
+			expect(result2).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "rooms1",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "sections",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				}
+			]);
+		});
+
+		it("should reject mismatched dataset kind", function() {
+			const result = facade.addDataset("dataset", sections, InsightDatasetKind.Rooms);
+			return expect(result).to.eventually.be.rejectedWith(InsightError);
+		});
+
+		it("should handle multiple room remove", async function() {
+			await facade.addDataset("rooms", campas, InsightDatasetKind.Rooms);
+			await facade.addDataset("rooms1", campas, InsightDatasetKind.Rooms);
+			await facade.addDataset("sections", sections, InsightDatasetKind.Sections);
+
+			const result = await facade.listDatasets();
+			expect(result).to.have.lengthOf(3);
+			expect(result).to.deep.equal([
+				{
+					id: "rooms",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "rooms1",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "sections",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				}
+			]);
+
+			await facade.removeDataset("rooms");
+			const result1 = await facade.listDatasets();
+			expect(result1).to.have.lengthOf(2);
+			expect(result1).to.deep.equal([
+				{
+					id: "rooms1",
+					kind: InsightDatasetKind.Rooms,
+					numRows:364
+				},
+				{
+					id: "sections",
+					kind: InsightDatasetKind.Sections,
+					numRows:64612
+				}
+			]);
+		});
 
 		/* it("should return multiple datasets", async function() {
 			await facade.addDataset("cpsc310", sections, InsightDatasetKind.Sections);
@@ -260,16 +376,18 @@ describe("InsightFacade", function () {
 			return facade.addDataset("sections", sectionContent, InsightDatasetKind.Sections)
 				.then((res) => {
 					return facade.addDataset("courses", sectionContent, InsightDatasetKind.Sections);
-				}).then((res) => {
+				})
+				.then((res) => {
 					return facade.addDataset("rooms", roomContent, InsightDatasetKind.Rooms);
-				}).catch((err)=>{
+				})
+				.catch((err)=>{
 					console.log("Can not add courses and/or sections for perform query test");
 				});
 
 			// Load the datasets specified in datasetsToQuery and add them to InsightFacade.
 			// Will *fail* if there is a problem reading ANY dataset.
 			// const loadDatasetPromises = [
-				// facade.addDataset("sections", sections, InsightDatasetKind.Sections),
+			// facade.addDataset("sections", sections, InsightDatasetKind.Sections),
 			// ];
 
 			// return Promise.all(loadDatasetPromises);
@@ -282,13 +400,12 @@ describe("InsightFacade", function () {
 
 		// type PQErrorKind = "ResultTooLargeError" | "InsightError";
 
-		 /* folderTest<Input, Output, Error>(
+		 folderTest<Input, Output, Error>(
 			"Dynamic InsightFacade PerformQuery tests",
 			(input) => facade.performQuery(input),
 			"./test/resources/queries",
 			{
 				assertOnResult: function assertResult(actual: unknown, expected, input): void {
-					// TODO add an assertion!
 					expect(actual).to.deep.members(expected);
 					// const optionKeys = Object.keys(input["OPTIONS"]);
 
@@ -299,7 +416,6 @@ describe("InsightFacade", function () {
 				// errorValidator: (error): error is PQErrorKind =>
 					// error === "ResultTooLargeError" || error === "InsightError",
 				assertOnError: function assertError(actual: any, expected: Error): void {
-					// TODO add an assertion!
 					if (expected === "InsightError") {
 						expect(actual).to.be.an.instanceOf(InsightError);
 					} else if (expected === "ResultTooLargeError") {
@@ -309,6 +425,6 @@ describe("InsightFacade", function () {
 					}
 				},
 			}
-		);*/
+		);
 	});
 });
