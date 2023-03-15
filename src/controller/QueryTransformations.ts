@@ -33,24 +33,24 @@ export class Transformations{
 		}
 	}
 }
-
 class Group{
 	public static perform(query: any, data: any[]): any {
 		const groupKeys = query["GROUP"];
 		const grouped: any = {};
-		data.forEach((d: any) => {
+		for (let d of data) {
 			const groupedKeyPart: any = {};
-			groupKeys.forEach((k: string) => {
-				groupedKeyPart[k] = String(d[k]);
-			});
+
+			for (let k of groupKeys) {
+				groupedKeyPart[k] = d[k];
+			}
 			const groupKey = JSON.stringify(groupedKeyPart);
 
-			if (Object.keys(grouped).includes(groupKey)) {
+			if (groupKey in grouped) {
 				grouped[groupKey].push(d);
 			} else {
 				grouped[groupKey] = [d];
 			}
-		});
+		}
 		return grouped;
 	}
 

@@ -112,14 +112,15 @@ export default class RoomDataSetHelper {
 
 
 	private static createRoomObjs(node: Node) {
-		if("childNodes" in node){
+		if ("childNodes" in node) {
 			return node.childNodes.filter((n) => {
 				return n.nodeName === "tr";
 			}).map((tr) => {
 				if("childNodes" in tr){
-					return tr.childNodes.filter((x) => {
+					const tds = tr.childNodes.filter((x)=>{
 						return x.nodeName === "td";
 					});
+					return tds;
 				}
 				throw new InsightError("No child node in room tr");
 			}).map((tr) => {
@@ -148,7 +149,7 @@ export default class RoomDataSetHelper {
 	}
 
 	private static loadRoomFiles(zip: JSZip, buildings: any[], promises: Array<Promise<string>>) {
-		 buildings.forEach((b) => {
+		buildings.forEach((b) => {
 			const file = zip.file(b["href"].replace("./",""))?.async("string");
 			if (file) {
 				promises.push(file);
@@ -158,7 +159,7 @@ export default class RoomDataSetHelper {
 		});
 	}
 
-	private static createBuildings(nodes: Node[], buildings: any[]){
+	private static createBuildings(nodes: Node[], buildings: any[]) {
 		nodes.forEach((node) => {
 			const building: any = {};
 
@@ -189,7 +190,7 @@ export default class RoomDataSetHelper {
 
 	private static findBuildEles(node: Node, result: any[]) {
 		if ("attrs" in node) {
-			if("nodeName" in node && node.nodeName === "tr"){
+			if ("nodeName" in node && node.nodeName === "tr") {
 				result.push(node);
 			}
 		}
