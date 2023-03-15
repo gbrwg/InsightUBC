@@ -7,7 +7,7 @@ import * as parse5 from "parse5";
 import * as http from "http";
 
 
-interface Building {
+interface Rooms {
 	fullname: string | undefined;
 	shortname: string | undefined;
 	number: string | undefined;
@@ -58,9 +58,9 @@ export default class RoomHelper {
 
 	}
 
-	public parseBuildingDetails(rows: any, zip: JSZip): Building[]{
-		const buildingFilePaths = new Map<string, Building>();
-		const result: Building[] = [];
+	public parseBuildingDetails(rows: any, zip: JSZip): Rooms[]{
+		const buildingFilePaths = new Map<string, Rooms>();
+		const result: Rooms[] = [];
 		// for each row of index table (each building in index.htm)
 		for (const row of rows) {
 			if (row.childNodes.length > 0) {
@@ -78,9 +78,9 @@ export default class RoomHelper {
 	// given list of nodes to a row's cells, get the shortname, full name and address of each building
 	// returns a map with the key as path and values as building
 	private getBuildingDetails(buildingDetails: any[],
-							   buildingFilePaths: Map<string, Building>): Map<string, Building> {
+							   buildingFilePaths: Map<string, Rooms>): Map<string, Rooms> {
 		let buildingFilePath: string = "";
-		let b: Building = {
+		let b: Rooms = {
 			address: undefined,
 			fullname: undefined,
 			furniture: undefined,
@@ -103,7 +103,7 @@ export default class RoomHelper {
 		return buildingFilePaths;
 	}
 
-	private getBuildingValues(td: any, b: Building, buildingFilePath: string) {
+	private getBuildingValues(td: any, b: Rooms, buildingFilePath: string) {
 		switch (td.attrs[0].value) {
 			case "views-field views-field-field-building-code":
 				for (const node of td.childNodes) {
@@ -148,8 +148,8 @@ export default class RoomHelper {
 	}
 
 // Parses all the files and return a list of rooms
-	public async parseFiles(zip: JSZip, building: Map<string, Building>): Promise<Building[]> {
-		let result: Building[] = [];
+	public async parseFiles(zip: JSZip, building: Map<string, Rooms>): Promise<Rooms[]> {
+		let result: Rooms[] = [];
 		// let buildingPaths: any[];
 
 		// get all building files
@@ -170,6 +170,7 @@ export default class RoomHelper {
 					// get the cells of each row
 					let tds = this.findNodes(row, "td");
 					this.parseRoomDetails(tds, value, result);
+					value.name = value.shortname + "_" + value.number;
 				}
 			}
 			curr++;
@@ -177,7 +178,7 @@ export default class RoomHelper {
 		return Promise.all(result);
 	}
 
-	private parseRoomDetails(tds: any, value: Building, res: Building[]) {
+	private parseRoomDetails(tds: any, value: Rooms, res: Rooms[]) {
 		// loop through each column and get href, number, seats, furniture, and number
 		for (const td of tds) {
 			for (const attr of td.attrs) {
@@ -191,7 +192,7 @@ export default class RoomHelper {
 		}
 	}
 
-	private getRoomDetails(childNodes: any, attr: any, value: Building) {
+	private getRoomDetails(childNodes: any, attr: any, value: Rooms) {
 		switch (attr.value) {
 			case "views-field views-field-field-room-number":
 				if (childNodes.nodeName === "a") {
@@ -229,13 +230,16 @@ export default class RoomHelper {
 	}
 
 	// TODO
-	private getGeoLocation(buildings: Building[]) {
+	private getGeoLocation(buildings: Rooms[]) {
 		for(const b of buildings) {
 			if(b.address !== undefined) {
 				const url = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team041/" +
 					encodeURIComponent(b.address);
-
+				http.get(url, (res) => {
+					const {statusCode} = res;
+				});
 			}
+
 		}
 
 	}
@@ -274,7 +278,7 @@ export default class RoomHelper {
 		return matchingNodes;
 	}
 
-	private getBuildingFiles(building: Map<string, Building>, zip: JSZip): Promise<string[]>{
+	private getBuildingFiles(building: Map<string, Rooms>, zip: JSZip): Promise<string[]>{
 		const paths = Array.from(building.keys());
 		const promises = paths.map((path) => {
 			const file = zip.file(path);
