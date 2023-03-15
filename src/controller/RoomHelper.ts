@@ -4,22 +4,10 @@ import {
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import * as parse5 from "parse5";
-import * as http from "http";
+import {Rooms} from "./Rooms";
+import {GeoLocation} from "./GeoLocation";
 
 
-interface Rooms {
-	fullname: string | undefined;
-	shortname: string | undefined;
-	number: string | undefined;
-	name: string | undefined;
-	address: string | undefined;
-	lat: number | undefined;
-	lon: number | undefined;
-	href: string | undefined;
-	seats: number | undefined;
-	type: string | undefined;
-	furniture: string | undefined;
-}
 export default class RoomHelper {
 	// private zip = new JSZip();
 	public processRooms(content: string): Promise<any[]> {
@@ -50,8 +38,8 @@ export default class RoomHelper {
 		}
 		let rows = this.findNodes(table, "tr");
 		let content = this.parseBuildingDetails(rows, zip);
-		this.getGeoLocation(content);
-
+		let geolocation = new GeoLocation();
+		geolocation.getGeoLocation(content);
 
 		return [];
 
@@ -229,21 +217,6 @@ export default class RoomHelper {
 		}
 	}
 
-	// TODO
-	private getGeoLocation(buildings: Rooms[]) {
-		for(const b of buildings) {
-			if(b.address !== undefined) {
-				const url = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team041/" +
-					encodeURIComponent(b.address);
-				http.get(url, (res) => {
-					const {statusCode} = res;
-				});
-			}
-
-		}
-
-	}
-
 	// https://stackoverflow.com/questions/67591100/how-to-parse-with-parse5
 	public findNode(node: any, tag: string): any {
 		for (let i = 0; i < node.childNodes?.length; i++) {
@@ -259,7 +232,6 @@ export default class RoomHelper {
 			}
 		}
 		return 0;
-
 	}
 
 	private findNodes(node: any, tag: string): any[] {
@@ -289,6 +261,4 @@ export default class RoomHelper {
 		});
 		return Promise.all(promises);
 	}
-
-
 }
