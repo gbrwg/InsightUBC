@@ -4,19 +4,21 @@ import {
 } from "./IInsightFacade";
 import JSZip from "jszip";
 import * as parse5 from "parse5";
+import * as http from "http";
+
 
 interface Building {
-	fullname: string;
-	shortname: string;
-	number: string;
-	name: string;
-	address: string,
-	lat: number;
-	lon: number;
-	href: string;
-	seats: number;
-	type: string;
-	furniture: string;
+	fullname: string | undefined;
+	shortname: string | undefined;
+	number: string | undefined;
+	name: string | undefined;
+	address: string | undefined;
+	lat: number | undefined;
+	lon: number | undefined;
+	href: string | undefined;
+	seats: number | undefined;
+	type: string | undefined;
+	furniture: string | undefined;
 }
 export default class RoomHelper {
 	// private zip = new JSZip();
@@ -48,7 +50,7 @@ export default class RoomHelper {
 		}
 		let rows = this.findNodes(table, "tr");
 		let content = this.parseBuildingDetails(rows, zip);
-		// this.getGeoLocation(content);
+		this.getGeoLocation(content);
 
 
 		return [];
@@ -59,7 +61,7 @@ export default class RoomHelper {
 	public parseBuildingDetails(rows: any, zip: JSZip): Building[]{
 		const buildingFilePaths = new Map<string, Building>();
 		const result: Building[] = [];
-		// for each row of index table
+		// for each row of index table (each building in index.htm)
 		for (const row of rows) {
 			if (row.childNodes.length > 0) {
 				let buildingDetails = this.findNodes(row, "td");
@@ -73,24 +75,26 @@ export default class RoomHelper {
 		return result;
 	}
 
-	// given list of nodes to rows, get the shortname, full name and address of each building
+	// given list of nodes to a row's cells, get the shortname, full name and address of each building
+	// returns a map with the key as path and values as building
 	private getBuildingDetails(buildingDetails: any[],
 							   buildingFilePaths: Map<string, Building>): Map<string, Building> {
 		let buildingFilePath: string = "";
+		let b: Building = {
+			address: undefined,
+			fullname: undefined,
+			furniture: undefined,
+			lat: undefined,
+			lon: undefined,
+			name: undefined,
+			number: undefined,
+			href: undefined,
+			seats:undefined,
+			shortname: undefined,
+			type: undefined
+		};
+		// each cell
 		for (const td of buildingDetails) {
-			let b: Building = {
-				address: "",
-				fullname: "",
-				furniture: "",
-				lat: 0,
-				lon: 0,
-				name: "",
-				number: "",
-				href: "",
-				seats: 0,
-				shortname: "",
-				type: ""
-			};
 			buildingFilePath = this.getBuildingValues(td, b, buildingFilePath);
 			if (buildingFilePath !== "") {
 				buildingFilePaths.set(buildingFilePath, b);
@@ -104,7 +108,7 @@ export default class RoomHelper {
 			case "views-field views-field-field-building-code":
 				for (const node of td.childNodes) {
 					if (node.nodeName === "#text") {
-						b.shortname = node.value;
+						b.shortname = node.value.trim();
 						break;
 					}
 				}
@@ -115,7 +119,7 @@ export default class RoomHelper {
 					if (node.nodeName === "a") {
 						for (const name of node.childNodes) {
 							if (node.nodeName === "text") {
-								b.fullname = node.value;
+								b.fullname = node.value.trim();
 								break;
 							}
 						}
@@ -132,7 +136,7 @@ export default class RoomHelper {
 			case "views-field views-field-field-building-address":
 				for (const node of td.childNodes) {
 					if (node.nodeName === "text") {
-						b.address = node.value;
+						b.address = node.value.trim();
 						break;
 					}
 				}
@@ -143,7 +147,7 @@ export default class RoomHelper {
 		return buildingFilePath;
 	}
 
-// Parses all the files and return a list of buildings
+// Parses all the files and return a list of rooms
 	public async parseFiles(zip: JSZip, building: Map<string, Building>): Promise<Building[]> {
 		let result: Building[] = [];
 		// let buildingPaths: any[];
@@ -152,32 +156,25 @@ export default class RoomHelper {
 		let files = await this.getBuildingFiles(building, zip);
 		// let documents = this.parseBuildingFiles(files);
 		let curr = 0;
+		let buildings = Array.from(building.keys());
 
+		// for each building file
 		for (let file of files) {
-			let buildings = Array.from(building.keys());
 			let value = building.get(buildings[curr]);
 			if (value !== undefined) {
 				let document = parse5.parse(file);
 				let tbody = this.findNode(document, "tbody");
 				let rows = this.findNodes(tbody, "tr");
-				let tds = this.findNodes(rows, "td");
-				this.parseRoomDetails(tds, value, result);
+				// for each row in the building file
+				for(const row of rows) {
+					// get the cells of each row
+					let tds = this.findNodes(row, "td");
+					this.parseRoomDetails(tds, value, result);
+				}
 			}
 			curr++;
 		}
 		return Promise.all(result);
-	}
-
-	private getBuildingFiles(building: Map<string, Building>, zip: JSZip): Promise<string[]>{
-		const paths = Array.from(building.keys());
-		const promises = paths.map((path) => {
-			const file = zip.file(path);
-			if (file !== null) {
-				return file.async("string");
-			}
-			return Promise.reject(new Error(`File not found: ${path}`));
-		});
-		return Promise.all(promises);
 	}
 
 	private parseRoomDetails(tds: any, value: Building, res: Building[]) {
@@ -231,6 +228,17 @@ export default class RoomHelper {
 		}
 	}
 
+	private getGeoLocation(buildings: Building[]) {
+		for(const b of buildings) {
+			if(b.address !== undefined) {
+				const url = "http://cs310.students.cs.ubc.ca:11316/api/v1/project_team041/" +
+					encodeURIComponent(b.address);
+
+			}
+		}
+
+	}
+
 	// https://stackoverflow.com/questions/67591100/how-to-parse-with-parse5
 	public findNode(node: any, tag: string): any {
 		for (let i = 0; i < node.childNodes?.length; i++) {
@@ -263,7 +271,19 @@ export default class RoomHelper {
 			}
 		}
 		return matchingNodes;
-
-
 	}
+
+	private getBuildingFiles(building: Map<string, Building>, zip: JSZip): Promise<string[]>{
+		const paths = Array.from(building.keys());
+		const promises = paths.map((path) => {
+			const file = zip.file(path);
+			if (file !== null) {
+				return file.async("string");
+			}
+			return Promise.reject(new Error(`File not found: ${path}`));
+		});
+		return Promise.all(promises);
+	}
+
+
 }
